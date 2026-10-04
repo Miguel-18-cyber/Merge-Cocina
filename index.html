@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0B1026" />
+    <meta name="description" content="Un pequeño juego de cocina para combinar comidas." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Merge Cocina" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <title>Merge Cocina</title>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section id="profile-screen" class="entry-screen glass-card" aria-labelledby="profile-title" hidden>
+        <div class="entry-brand" aria-hidden="true">🍳</div>
+        <p class="eyebrow accent">BIENVENIDO A LA COCINA</p>
+        <h1 id="profile-title">¿Quién va a jugar?</h1>
+        <p class="screen-copy">Crea tu perfil y guarda tu aventura de cocina en este dispositivo.</p>
+        <form id="profile-form" class="profile-form">
+          <label for="player-name">Tu nombre</label>
+          <input id="player-name" name="name" type="text" maxlength="24" autocomplete="given-name" placeholder="Por ejemplo, Alex" required />
+          <label for="player-age">Tu edad</label>
+          <input id="player-age" name="age" type="number" min="1" max="120" inputmode="numeric" placeholder="Tu edad" required />
+          <p class="form-note">Tu perfil se guarda en este dispositivo y no aparece públicamente.</p>
+          <button class="primary-button" type="submit">Continuar <span aria-hidden="true">→</span></button>
+        </form>
+      </section>
+
+      <section id="hub-screen" class="hub-screen" aria-labelledby="hub-title" hidden>
+        <header class="hub-header">
+          <div class="hub-brand"><span class="brand-mark" aria-hidden="true">🍳</span><div><p class="eyebrow">UN JUEGO DE COCINA</p><h1 id="hub-title">Merge Cocina</h1></div></div>
+          <button id="edit-profile-button" class="quiet-button" type="button">Mi perfil</button>
+        </header>
+        <section id="dashboard-view" class="hub-view">
+          <div class="welcome-card glass-card">
+            <div class="welcome-copy-block"><p class="eyebrow accent">TU COCINA TE ESPERA</p><h2 id="welcome-title">¡Hola!</h2><p id="welcome-copy" class="screen-copy"></p><div class="hub-level-progress"><div><span>Avance del nivel</span><strong id="hub-level-progress-copy">0 / 2 pedidos</strong></div><span id="hub-level-progress-track" role="progressbar" aria-label="Avance de los pedidos del nivel" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0"><span id="hub-level-progress"></span></span></div></div>
+            <div class="player-level"><span>⭐</span><div><small>NIVEL DE JUGADOR</small><strong id="player-level">1</strong></div></div>
+          </div>
+          <div class="hub-stats">
+            <div class="hub-stat glass-card"><span>🪙</span><div><small>MONEDAS</small><strong id="hub-coins">0</strong></div></div>
+            <div class="hub-stat glass-card"><span>🌟</span><div><small>ESTRELLAS</small><strong id="hub-stars">0</strong></div></div>
+            <div class="hub-stat glass-card"><span>🏆</span><div><small>LOGROS</small><strong><span id="hub-achievements">0</span> / <span id="achievements-total">3</span></strong></div></div>
+          </div>
+          <div class="hub-menu">
+            <button id="play-button" class="hub-action play-action" type="button"><span class="hub-action-icon">🧩</span><span><strong id="play-title">Continuar partida</strong><small id="play-copy">Combina ingredientes y completa pedidos</small></span><span class="action-arrow">→</span></button>
+            <button class="hub-action" data-view="achievements-view" type="button"><span class="hub-action-icon">🏆</span><span><strong>Mis logros</strong><small>Revisa tus metas de cocina</small></span><span class="action-arrow">→</span></button>
+            <button class="hub-action" data-view="shop-view" type="button"><span class="hub-action-icon">🛍️</span><span><strong>Tienda</strong><small>Monedas y artículos para tu partida</small></span><span class="action-arrow">→</span></button>
+          </div>
+        </section>
+        <section id="achievements-view" class="hub-view detail-view" aria-labelledby="achievements-title" hidden>
+          <button class="back-button" data-view="dashboard-view" type="button">← Menú</button>
+          <p class="eyebrow accent">TUS METAS</p><h2 id="achievements-title">Logros</h2>
+          <p class="screen-copy">Sigue jugando para completar tus insignias.</p>
+          <div id="achievements-list" class="achievement-list"></div>
+        </section>
+        <section id="shop-view" class="hub-view detail-view" aria-labelledby="shop-title" hidden>
+          <button class="back-button" data-view="dashboard-view" type="button">← Menú</button>
+          <p class="eyebrow accent">PARA TU COCINA</p><h2 id="shop-title">Tienda</h2>
+          <p class="screen-copy">Usa las monedas que ganas en los niveles para decorar tu tablero o conseguir movimientos extra.</p>
+          <div class="shop-balance glass-card"><span>Tu saldo</span><strong id="shop-coins">🪙 0</strong></div>
+          <div class="shop-section-heading"><div><p class="eyebrow accent">PERSONALIZA TU PARTIDA</p><h3>Marcos y estilos</h3></div><span>Se compran una vez y quedan tuyos</span></div>
+          <div id="cosmetic-list" class="cosmetic-list"></div>
+          <p id="cosmetic-feedback" class="shop-feedback" role="status" aria-live="polite"></p>
+          <div class="shop-section-heading frame-shop-heading"><div><p class="eyebrow accent">PERSONALIZA TU ÍCONO</p><h3>Marcos de perfil</h3></div><span>Usa tu saldo para desbloquearlos</span></div>
+          <div id="profile-frame-shop-list" class="cosmetic-list"></div>
+          <p id="frame-shop-feedback" class="shop-feedback" role="status" aria-live="polite"></p>
+          <div class="shop-section-heading profile-icon-shop-heading"><div><p class="eyebrow accent">ELIGE TU PERSONAJE</p><h3>Iconos de perfil</h3></div><span>Personajes, animales y más</span></div>
+          <div id="profile-icon-shop-list" class="cosmetic-list profile-icon-shop-list"></div>
+          <p id="icon-shop-feedback" class="shop-feedback" role="status" aria-live="polite"></p>
+          <div class="shop-section-heading move-shop-heading"><div><p class="eyebrow">PARA ESTE NIVEL</p><h3>Movimientos extra</h3></div></div>
+          <article class="move-pack glass-card"><div><span class="pack-icon">🧩</span><div><h3>Paquete de 5 movimientos</h3><p>Úsalo cuando quieras una ayuda en tu nivel actual.</p></div></div><button id="shop-moves-button" class="shop-button" type="button">5 movimientos · 300 monedas</button></article>
+          <p id="shop-feedback" class="shop-feedback" role="status" aria-live="polite"></p>
+          <div class="shop-section-heading paid-shop-heading"><div><p class="eyebrow">PAGO REAL</p><h3>Comprar monedas</h3></div><span>9 tamaños · precios en dólares</span></div>
+          <div id="coin-pack-list" class="shop-packs coin-pack-list"></div>
+          <p class="form-note coin-purchase-note">Estos paquetes muestran precios y cantidades de referencia. Los cobros se activarán al conectar un proveedor de pagos y verificar las transacciones en un servicio seguro.</p>
+        </section>
+        <section id="profile-view" class="hub-view detail-view profile-detail-view" aria-labelledby="profile-view-title" hidden>
+          <button class="back-button" data-view="dashboard-view" type="button">← Menú</button>
+          <p class="eyebrow accent">TU CUENTA DE COCINA</p>
+          <h2 id="profile-view-title">Mi perfil</h2>
+          <div class="profile-summary glass-card">
+            <div id="profile-avatar" class="profile-avatar" data-frame="perfil-clasico">
+              <img id="profile-avatar-image" alt="Foto de perfil" hidden />
+              <span id="profile-avatar-placeholder" aria-hidden="true">👩‍🍳</span>
+            </div>
+            <div class="profile-summary-copy">
+              <h3 id="profile-display-name">Chef</h3>
+              <p id="profile-display-age">Edad</p>
+              <p id="profile-display-description" class="profile-description">Todavía no has escrito una descripción.</p>
+            </div>
+          </div>
+          <form id="profile-details-form" class="profile-edit-form glass-card">
+            <label for="profile-description-input">Descripción <span>(opcional)</span></label>
+            <textarea id="profile-description-input" maxlength="180" rows="3" placeholder="Cuéntanos algo sobre ti o tu cocina..."></textarea>
+            <label for="profile-image-input">Imagen de perfil</label>
+            <input id="profile-image-input" type="file" accept="image/*" />
+            <div class="profile-image-actions">
+              <p class="form-note">La imagen se ajusta y se guarda en este dispositivo.</p>
+              <button id="remove-profile-image" class="quiet-button" type="button" hidden>Quitar foto</button>
+            </div>
+            <button class="primary-button" type="submit">Guardar cambios</button>
+            <p id="profile-feedback" class="shop-feedback" role="status" aria-live="polite"></p>
+          </form>
+          <section class="profile-frames-section" aria-labelledby="profile-frames-title">
+            <div class="shop-section-heading"><div><p class="eyebrow">TU ÍCONO</p><h3 id="profile-frames-title">Marcos desbloqueados</h3></div><span>Equipa el que más te guste</span></div>
+            <div id="profile-frame-options" class="profile-frame-options"></div>
+            <button class="back-button profile-shop-link" data-view="shop-view" type="button">Ver más marcos en la tienda →</button>
+          </section>
+          <section class="profile-frames-section" aria-labelledby="profile-icons-title">
+            <div class="shop-section-heading"><div><p class="eyebrow">TU PERSONAJE</p><h3 id="profile-icons-title">Iconos desbloqueados</h3></div><span>Escoge quién te representa</span></div>
+            <div id="profile-icon-options" class="profile-frame-options"></div>
+            <button class="back-button profile-shop-link" data-view="shop-view" type="button">Ver más iconos en la tienda →</button>
+          </section>
+        </section>
+      </section>
+
+      <section id="game-screen" hidden>
+      <header class="topbar">
+        <div class="brand-mark" aria-hidden="true">🍳</div>
+        <div>
+          <p class="eyebrow">UN JUEGO DE COCINA</p>
+          <h1>Merge Cocina</h1>
+        </div>
+        <button id="game-menu-button" class="quiet-button" type="button">← Menú</button>
+        <div class="header-stats" aria-label="Estado de la partida">
+          <div class="header-stat"><span>Nivel</span><strong id="level-count">1 / 8</strong></div>
+          <div class="header-stat"><span>Monedas</span><strong id="coins-count">🪙 0</strong></div>
+          <div class="header-stat"><span>Estrellas</span><strong id="stars-count">⭐ 0</strong></div>
+          <div class="header-stat move-stat"><span>Movimientos</span><strong id="moves-count">7 / 7</strong><small id="defeats-count">Derrotas 0 / 2</small></div>
+        </div>
+        <button id="restart-button" class="reset-button" type="button" aria-label="Reiniciar progreso" title="Reiniciar progreso">↺ <span>Reiniciar progreso</span></button>
+      </header>
+      <section class="game-layout" aria-label="Partida">
+        <div class="game-main">
+          <section class="glass-card level-card">
+            <div><p id="level-label" class="eyebrow accent">NIVEL 1</p><h2 id="level-name">La primera merienda</h2></div>
+            <p class="level-hint">Combinar o generar cuesta 1 movimiento. Entregar pedidos es gratis. Tienes los movimientos necesarios para las recetas y 5 extra.</p>
+          </section>
+          <section class="glass-card orders-card" aria-labelledby="orders-title">
+            <div class="orders-heading"><div><p class="eyebrow">PEDIDOS DE HOY</p><h3 id="orders-title">Prepara estas recetas</h3></div><span id="orders-progress" class="orders-progress">0 / 2</span></div>
+            <div id="orders-list" class="orders-list"></div>
+          </section>
+          <section class="glass-card board-card" aria-label="Tablero de cocina">
+            <div id="board" class="board" aria-label="Tablero de cocina con 5 columnas y 6 filas"></div>
+            <div class="moves-meter-wrap"><div><span>Movimientos de este intento</span><strong id="moves-meter-label">7 disponibles</strong></div><span id="moves-meter" class="moves-meter" role="progressbar" aria-label="Movimientos disponibles" aria-valuemin="0" aria-valuemax="7" aria-valuenow="7"><span id="moves-progress"></span></span></div>
+            <div class="board-actions">
+              <button id="generate-button" class="primary-button" type="button">Generar ingrediente <small class="action-cost">1 movimiento</small> <span aria-hidden="true">＋</span></button>
+              <button id="hint-button" class="hint-button" type="button" aria-controls="board">💡 Pista gratis</button>
+            </div>
+            <p id="game-message" class="game-message" role="status" aria-live="polite">Combina piezas iguales o genera ingredientes con tus movimientos.</p>
+          </section>
+        </div>
+      </section>
+      <footer>Hecho para jugar en el navegador y en tu pantalla de inicio.</footer>
+      </section>
+    </main>
+    <dialog id="level-dialog" class="level-dialog" aria-labelledby="dialog-title">
+      <p class="eyebrow accent">¡PEDIDOS COMPLETADOS!</p>
+      <h2 id="dialog-title">Nivel completado</h2>
+      <p id="dialog-reward" class="dialog-reward"></p>
+      <button id="next-level-button" class="primary-button" type="button">Siguiente nivel</button>
+      <button id="dialog-menu-button" class="quiet-button" type="button">Volver al menú</button>
+    </dialog>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

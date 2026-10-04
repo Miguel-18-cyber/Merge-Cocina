@@ -1,0 +1,15 @@
+node_modules/
+.pnpm-store/
+dist/
+.vercel/
+.env
+.env.*
+!.env.example
+.chrome-*/
+.edge-*/
+.edge-ui-check-*/
+.chrome-debug-profile/
+.temp-*
+*.log
+.DS_Store
+Thumbs.db
