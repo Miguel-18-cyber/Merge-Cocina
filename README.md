@@ -8,7 +8,7 @@ Un juego casual de cocina para combinar ingredientes, completar pedidos y pasar 
 ## Perfil, movimientos y monedas
 
 - El inicio pide nombre y edad; después abre el menú con Puzzle, Logros y Tienda.
-- Cada combinación válida y cada ingrediente generado usa un movimiento. El nivel estima las acciones mínimas para sus pedidos y añade cinco movimientos de margen.
+- Cada combinación válida cuesta 1 movimiento; intentar combinar productos distintos también resta 1. Generar un ingrediente cuesta ½ movimiento. El nivel estima las acciones mínimas para sus pedidos y añade cinco movimientos de margen.
 - Las pistas son gratis: resaltan una combinación útil o recomiendan el ingrediente que ayuda a preparar los pedidos pendientes.
 - Generar ingredientes ya no usa una segunda barra de energía. El tipo de ingrediente generado se orienta a los pedidos que faltan.
 - La pantalla principal muestra el avance del nivel; los logros incluyen una barra de progreso.

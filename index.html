@@ -138,7 +138,7 @@
         <div class="game-main">
           <section class="glass-card level-card">
             <div><p id="level-label" class="eyebrow accent">NIVEL 1</p><h2 id="level-name">La primera merienda</h2></div>
-            <p class="level-hint">Combinar o generar cuesta 1 movimiento. Entregar pedidos es gratis. Tienes los movimientos necesarios para las recetas y 5 extra.</p>
+            <p class="level-hint">Combinar dos productos iguales cuesta 1 movimiento; intentarlo con productos distintos también resta 1. Generar un ingrediente cuesta ½ movimiento. Entregar pedidos es gratis. Tienes los movimientos necesarios para las recetas y 5 extra.</p>
           </section>
           <section class="glass-card orders-card" aria-labelledby="orders-title">
             <div class="orders-heading"><div><p class="eyebrow">PEDIDOS DE HOY</p><h3 id="orders-title">Prepara estas recetas</h3></div><span id="orders-progress" class="orders-progress">0 / 2</span></div>
@@ -148,10 +148,10 @@
             <div id="board" class="board" aria-label="Tablero de cocina con 5 columnas y 6 filas"></div>
             <div class="moves-meter-wrap"><div><span>Movimientos de este intento</span><strong id="moves-meter-label">7 disponibles</strong></div><span id="moves-meter" class="moves-meter" role="progressbar" aria-label="Movimientos disponibles" aria-valuemin="0" aria-valuemax="7" aria-valuenow="7"><span id="moves-progress"></span></span></div>
             <div class="board-actions">
-              <button id="generate-button" class="primary-button" type="button">Generar ingrediente <small class="action-cost">1 movimiento</small> <span aria-hidden="true">＋</span></button>
+              <button id="generate-button" class="primary-button" type="button">Generar ingrediente <small class="action-cost">½ movimiento</small> <span aria-hidden="true">＋</span></button>
               <button id="hint-button" class="hint-button" type="button" aria-controls="board">💡 Pista gratis</button>
             </div>
-            <p id="game-message" class="game-message" role="status" aria-live="polite">Combina piezas iguales o genera ingredientes con tus movimientos.</p>
+            <p id="game-message" class="game-message" role="status" aria-live="polite">Combinar productos distintos cuesta 1 movimiento; generar un ingrediente cuesta ½.</p>
           </section>
         </div>
       </section>

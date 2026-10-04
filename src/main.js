@@ -21,6 +21,7 @@ const CLAVE_COSMETICOS = 'merge-cocina-cosmeticos-v1';
 const CLAVE_LOGROS = 'merge-cocina-logros-v1';
 const COSTE_PAQUETE_MOVIMIENTOS = 300;
 const formatoMonedas = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 0 });
+const formatoMovimientos = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 1 });
 const formatoDolares = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 restaurarProgreso();
 let perfil = restaurarPerfil();
@@ -609,7 +610,7 @@ function renderTablero() {
     const columna = indice % COLUMNAS + 1;
     const fila = Math.floor(indice / COLUMNAS) + 1;
     celda.type = 'button';
-    celda.disabled = juego.movimientosRestantes <= 0;
+    celda.disabled = juego.movimientosRestantes < 1;
     celda.className = `board-cell${pieza ? '' : ' empty'}${seleccionada === indice ? ' selected' : ''}${fusionada === indice ? ' merged' : ''}${pistaIndices.includes(indice) ? ' hinted' : ''}`;
     celda.setAttribute('aria-pressed', String(seleccionada === indice));
     celda.setAttribute('aria-label', pieza
@@ -632,18 +633,18 @@ function renderTablero() {
 }
 
 function renderMovimientos() {
-  document.querySelector('#moves-count').textContent = `${juego.movimientosRestantes} / ${juego.movimientosMaximos}`;
+  document.querySelector('#moves-count').textContent = `${formatoMovimientos.format(juego.movimientosRestantes)} / ${formatoMovimientos.format(juego.movimientosMaximos)}`;
   document.querySelector('#defeats-count').textContent = `Derrotas ${juego.derrotasEnNivel} / 2`;
   const progreso = document.querySelector('#moves-progress');
   progreso.style.width = `${juego.movimientosMaximos ? juego.movimientosRestantes / juego.movimientosMaximos * 100 : 0}%`;
   const indicador = document.querySelector('#moves-meter');
   indicador.setAttribute('aria-valuemax', String(juego.movimientosMaximos));
   indicador.setAttribute('aria-valuenow', String(juego.movimientosRestantes));
-  document.querySelector('#moves-meter-label').textContent = `${juego.movimientosRestantes} ${juego.movimientosRestantes === 1 ? 'disponible' : 'disponibles'}`;
-  generateButton.disabled = juego.movimientosRestantes <= 0 || !juego.tablero.includes(null);
+  document.querySelector('#moves-meter-label').textContent = `${formatoMovimientos.format(juego.movimientosRestantes)} ${juego.movimientosRestantes === 1 ? 'disponible' : 'disponibles'}`;
+  generateButton.disabled = juego.movimientosRestantes < 0.5 || !juego.tablero.includes(null);
   generateButton.title = !juego.tablero.includes(null)
     ? 'La cocina está llena. Combina o entrega algo para liberar espacio.'
-    : juego.movimientosRestantes <= 0 ? 'No quedan movimientos en este intento.' : 'Generar un ingrediente cuesta 1 movimiento.';
+    : juego.movimientosRestantes < 0.5 ? 'No quedan movimientos en este intento.' : 'Generar un ingrediente cuesta ½ movimiento.';
 }
 
 function renderPedidos() {
@@ -777,10 +778,21 @@ function tocarCelda(indice) {
   }
   const resultado = juego.combinar(seleccionada, indice);
   if (!resultado.ok) {
-    seleccionada = indice;
+    if (resultado.motivo === 'piezas-distintas') {
+      seleccionada = resultado.derrota ? null : indice;
+      messageElement.textContent = resultado.derrota
+        ? textoDerrota(resultado.derrota)
+        : 'Los productos son distintos. Se descontó 1 movimiento; combina dos iguales.';
+      renderEstado();
+      return;
+    }
+
+    seleccionada = resultado.motivo === 'sin-movimientos' ? null : indice;
     messageElement.textContent = resultado.motivo === 'nivel-maximo'
       ? 'Esta receta ya alcanzó su nivel máximo.'
-      : 'No son iguales. Seleccioné la pieza que acabas de tocar.';
+      : resultado.motivo === 'sin-movimientos'
+        ? 'Para combinar necesitas 1 movimiento completo. Generar un ingrediente cuesta ½ movimiento.'
+        : 'No se pudo combinar esa pieza.';
     renderTablero();
     return;
   }
@@ -827,7 +839,7 @@ function entregarPedido(pedidoId) {
 
 function mostrarPista() {
   if (juego.movimientosRestantes <= 0) {
-    messageElement.textContent = `No quedan movimientos. Entrega los pedidos que ya tengas listos o consigue 5 movimientos en la tienda por ${formatoMonedas.format(COSTE_PAQUETE_MOVIMIENTOS)} monedas.`;
+    messageElement.textContent = `No quedan movimientos. Entrega los pedidos listos o consigue 5 movimientos en la tienda por ${formatoMonedas.format(COSTE_PAQUETE_MOVIMIENTOS)} monedas.`;
     return;
   }
   const piezas = juego.tablero;
@@ -835,7 +847,7 @@ function mostrarPista() {
   const pares = [];
   for (let origen = 0; origen < piezas.length; origen += 1) {
     const pieza = piezas[origen];
-    if (!pieza || pieza.nivel >= 5) continue;
+    if (juego.movimientosRestantes < 1 || !pieza || pieza.nivel >= 5) continue;
     for (let destino = origen + 1; destino < piezas.length; destino += 1) {
       const otra = piezas[destino];
       if (!otra || pieza.familia !== otra.familia || pieza.nivel !== otra.nivel) continue;
@@ -861,7 +873,9 @@ function mostrarPista() {
     const listo = pedidosPendientes.find((pedido) => juego.puedeEntregar(pedido));
     messageElement.textContent = listo
       ? `Pista gratis: entrega el pedido de ${nombrePieza(listo.familia, listo.nivel).toLowerCase()} para liberar espacio; no cuesta movimientos.`
-      : 'Pista gratis: la cocina está llena. Combina piezas iguales para abrir espacio.';
+      : juego.movimientosRestantes < 1
+        ? 'Pista gratis: te falta 1 movimiento completo para combinar; compra movimientos en la tienda.'
+        : 'Pista gratis: la cocina está llena. Combina piezas iguales para abrir espacio.';
     renderTablero();
     return;
   }

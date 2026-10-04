@@ -25,21 +25,24 @@ export class ControladorJuego {
   }
 
   combinar(origen, destino) {
-    if (this.movimientosRestantes <= 0) return { ok: false, motivo: 'sin-movimientos', tablero: this.tablero };
+    if (this.movimientosRestantes < 1) return { ok: false, motivo: 'sin-movimientos', tablero: this.tablero };
     const resultado = combinarPiezas(this.tablero, origen, destino);
-    if (!resultado.ok) return resultado;
+    if (!resultado.ok) {
+      if (resultado.motivo !== 'piezas-distintas') return resultado;
+      return { ...resultado, derrota: this.gastarMovimiento(1) };
+    }
     this.tablero = resultado.tablero;
-    return { ...resultado, derrota: this.gastarMovimiento() };
+    return { ...resultado, derrota: this.gastarMovimiento(1) };
   }
 
   generar() {
-    if (this.movimientosRestantes <= 0) return { ok: false, motivo: 'sin-movimientos', tablero: this.tablero };
+    if (this.movimientosRestantes < 0.5) return { ok: false, motivo: 'sin-movimientos', tablero: this.tablero };
     const familia = this.familiaSugerida();
     const resultado = generar(this.tablero, crearPieza(familia, 1));
     if (!resultado.ok) return resultado;
     this.tablero = resultado.tablero;
     this.siguienteFamilia = familia === 'pan' ? 'fruta' : 'pan';
-    return { ...resultado, familia, derrota: this.gastarMovimiento() };
+    return { ...resultado, familia, derrota: this.gastarMovimiento(0.5) };
   }
 
   familiaSugerida() {
@@ -157,8 +160,8 @@ export class ControladorJuego {
     this.derrotasEnNivel = Math.min(1, numeroSeguro(estado.derrotasEnNivel));
     this.reiniciarMovimientos();
     if (Number.isFinite(estado.movimientosMaximos) && Number.isFinite(estado.movimientosRestantes)) {
-      this.movimientosMaximos = Math.max(0, Math.floor(estado.movimientosMaximos));
-      this.movimientosRestantes = Math.min(this.movimientosMaximos, Math.max(0, Math.floor(estado.movimientosRestantes)));
+      this.movimientosMaximos = normalizarMovimientos(estado.movimientosMaximos);
+      this.movimientosRestantes = Math.min(this.movimientosMaximos, normalizarMovimientos(estado.movimientosRestantes));
     }
   }
 
@@ -168,8 +171,8 @@ export class ControladorJuego {
     this.movimientosRestantes = this.movimientosMaximos;
   }
 
-  gastarMovimiento() {
-    this.movimientosRestantes = Math.max(0, this.movimientosRestantes - 1);
+  gastarMovimiento(cantidad = 1) {
+    this.movimientosRestantes = Math.max(0, this.movimientosRestantes - cantidad);
     return this.registrarDerrotaSiCorresponde();
   }
 
@@ -196,4 +199,9 @@ export class ControladorJuego {
 function numeroSeguro(valor) {
   if (!Number.isFinite(valor)) return 0;
   return Math.max(0, Math.floor(valor));
+}
+
+function normalizarMovimientos(valor) {
+  if (!Number.isFinite(valor)) return 0;
+  return Math.max(0, Math.floor(valor * 2 + 1e-9) / 2);
 }
