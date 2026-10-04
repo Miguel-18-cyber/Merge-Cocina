@@ -10,19 +10,24 @@ import {
   TEMA_PREDETERMINADO,
 } from './data/cosmeticos.js';
 import { PAQUETES_MONEDAS } from './data/paquetes-monedas.js';
+import { crearLogros } from './data/logros.js';
+import { iniciarAnunciosH5, mostrarAnuncioCadaDosNiveles } from './game/anuncios-h5.js';
 import { ControladorJuego } from './game/estado.js';
 
 const juego = new ControladorJuego();
 const CLAVE_PROGRESO = 'merge-cocina-progreso-v1';
 const CLAVE_PERFIL = 'merge-cocina-perfil-v1';
 const CLAVE_COSMETICOS = 'merge-cocina-cosmeticos-v1';
+const CLAVE_LOGROS = 'merge-cocina-logros-v1';
 const COSTE_PAQUETE_MOVIMIENTOS = 300;
 const formatoMonedas = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 0 });
 const formatoDolares = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 restaurarProgreso();
 let perfil = restaurarPerfil();
 let coleccion = restaurarCosmeticos();
+let logrosDesbloqueados = restaurarLogrosDesbloqueados();
 let seleccionada = null;
+let transicionNivelEnCurso = false;
 let fusionada = null;
 let pistaIndices = [];
 let avatarTemporal = null;
@@ -71,11 +76,23 @@ function mostrarVistaCentro(id) {
 
 function renderCentro() {
   if (!perfil) return;
-  const logros = [
-    { titulo: 'Primer pedido', descripcion: 'Completa tu primer nivel.', actual: Math.min(juego.estrellas, 1), meta: 1, logrado: juego.estrellas >= 1, icono: '🍽️' },
-    { titulo: 'Chef en camino', descripcion: 'Avanza hasta desbloquear el nivel 3.', actual: Math.min(Math.max(juego.nivel.id - 1, 0), 2), meta: 2, logrado: juego.nivel.id >= 3, icono: '👩‍🍳' },
-    { titulo: 'Cocina estrellada', descripcion: 'Consigue 8 estrellas.', actual: Math.min(juego.estrellas, 8), meta: 8, logrado: juego.estrellas >= 8, icono: '🌟' },
-  ];
+  const articulosDesbloqueados = Math.max(
+    0,
+    coleccion.desbloqueados.size + coleccion.marcosDesbloqueados.size + coleccion.iconosDesbloqueados.size - 3,
+  );
+  const logros = crearLogros({
+    nivelId: juego.nivel.id,
+    recompensado: juego.recompensado,
+    estrellas: juego.estrellas,
+    monedas: juego.monedas,
+    articulosDesbloqueados,
+  });
+  logros.forEach((logro) => {
+    if (logro.actual >= logro.meta) logrosDesbloqueados.add(logro.id);
+    logro.logrado = logrosDesbloqueados.has(logro.id);
+    if (logro.logrado) logro.actual = logro.meta;
+  });
+  guardarLogrosDesbloqueados();
   const completados = logros.filter((logro) => logro.logrado).length;
   const pedidosCompletados = juego.nivel.pedidos.length - juego.pedidosRestantes.size;
   document.querySelector('#welcome-title').textContent = `¡Hola, ${perfil.nombre}!`;
@@ -102,6 +119,7 @@ function renderCentro() {
   document.querySelector('#hub-coins').textContent = formatoMonedas.format(juego.monedas);
   document.querySelector('#hub-stars').textContent = String(juego.estrellas);
   document.querySelector('#hub-achievements').textContent = String(completados);
+  document.querySelector('#achievements-total').textContent = String(logros.length);
   document.querySelector('#shop-coins').textContent = `🪙 ${formatoMonedas.format(juego.monedas)}`;
   const botonMovimientos = document.querySelector('#shop-moves-button');
   botonMovimientos.disabled = juego.monedas < COSTE_PAQUETE_MOVIMIENTOS;
@@ -676,6 +694,26 @@ function renderEstado() {
   guardarProgreso();
 }
 
+function avanzarNivelCompletado() {
+  if (transicionNivelEnCurso || !juego.recompensado) return;
+  transicionNivelEnCurso = true;
+  const nivelCompletado = juego.nivel.id;
+
+  const continuar = () => {
+    if (nivelCompletado >= NIVELES.length) juego.empezarOtraVuelta();
+    else juego.avanzarNivel();
+    seleccionada = null;
+    pistaIndices = [];
+    messageElement.textContent = juego.nivel.id === 1
+      ? '¡Nueva vuelta! Tus monedas y estrellas siguen contigo.'
+      : 'Prepara los pedidos de este nivel.';
+    transicionNivelEnCurso = false;
+    renderEstado();
+  };
+
+  mostrarAnuncioCadaDosNiveles(nivelCompletado, continuar);
+}
+
 function mostrarRecompensa() {
   const { monedas, estrellas } = juego.nivel.recompensa;
   document.querySelector('#dialog-reward').textContent = `Ganaste ${formatoMonedas.format(monedas)} monedas y ${estrellas} ${estrellas === 1 ? 'estrella' : 'estrellas'}.`;
@@ -700,6 +738,23 @@ function guardarProgreso() {
     localStorage.setItem(CLAVE_PROGRESO, JSON.stringify(juego.serializar()));
   } catch (error) {
     console.warn('No se pudo guardar el progreso en este navegador.', error);
+  }
+}
+
+function restaurarLogrosDesbloqueados() {
+  try {
+    const guardados = JSON.parse(localStorage.getItem(CLAVE_LOGROS));
+    return new Set(Array.isArray(guardados) ? guardados.filter((id) => typeof id === 'string') : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function guardarLogrosDesbloqueados() {
+  try {
+    localStorage.setItem(CLAVE_LOGROS, JSON.stringify([...logrosDesbloqueados]));
+  } catch (error) {
+    console.warn('No se pudieron guardar los logros en este navegador.', error);
   }
 }
 
@@ -885,11 +940,8 @@ document.querySelector('#play-button').addEventListener('click', () => {
   hubScreen.hidden = true;
   gameScreen.hidden = false;
   if (juego.recompensado) {
-    if (juego.nivel.id < NIVELES.length) juego.avanzarNivel();
-    else juego.empezarOtraVuelta();
-    seleccionada = null;
-    pistaIndices = [];
-    messageElement.textContent = '¡Nueva vuelta! Tus monedas y estrellas siguen contigo.';
+    avanzarNivelCompletado();
+    return;
   }
   renderEstado();
 });
@@ -905,17 +957,7 @@ hubScreen.querySelectorAll('[data-view]').forEach((button) => {
 });
 document.querySelector('#next-level-button').addEventListener('click', () => {
   dialogElement.close();
-  if (juego.nivel.id >= NIVELES.length) {
-    juego.empezarOtraVuelta();
-  } else {
-    juego.avanzarNivel();
-  }
-  seleccionada = null;
-  pistaIndices = [];
-  messageElement.textContent = juego.nivel.id === 1
-    ? '¡Nueva vuelta! Tus monedas y estrellas siguen contigo.'
-    : 'Prepara los pedidos de este nivel.';
-  renderEstado();
+  avanzarNivelCompletado();
 });
 document.querySelector('#dialog-menu-button').addEventListener('click', () => {
   dialogElement.close();
@@ -937,6 +979,7 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') guardarProgreso();
 });
 
+iniciarAnunciosH5();
 renderEstado();
 if (perfil) mostrarCentro();
 else mostrarPerfil();
