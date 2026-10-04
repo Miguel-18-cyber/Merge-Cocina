@@ -13,12 +13,30 @@ import { PAQUETES_MONEDAS } from './data/paquetes-monedas.js';
 import { crearLogros } from './data/logros.js';
 import { iniciarAnunciosH5, mostrarAnuncioCadaDosNiveles } from './game/anuncios-h5.js';
 import { ControladorJuego } from './game/estado.js';
+import {
+  NUBE_CONFIGURADA,
+  iniciarSesionGoogle,
+  procesarRetornoGoogle,
+  obtenerSesion,
+  cerrarSesionOnline,
+  cargarCuentaOnline,
+  crearPerfilOnline,
+  guardarEstadoOnline,
+  buscarJugadores,
+  cargarClasificacion,
+  cargarClasificacionSemanal,
+  cargarAmistades,
+  solicitarAmistad,
+  responderSolicitudAmistad,
+  eliminarAmistad,
+} from './game/nube.js';
 
 const juego = new ControladorJuego();
 const CLAVE_PROGRESO = 'merge-cocina-progreso-v1';
 const CLAVE_PERFIL = 'merge-cocina-perfil-v1';
 const CLAVE_COSMETICOS = 'merge-cocina-cosmeticos-v1';
 const CLAVE_LOGROS = 'merge-cocina-logros-v1';
+const CLAVE_EVENTOS_PEDIDO = 'merge-cocina-pedidos-semanales-v1';
 const COSTE_PAQUETE_MOVIMIENTOS = 300;
 const formatoMonedas = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 0 });
 const formatoMovimientos = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 1 });
@@ -32,6 +50,19 @@ let transicionNivelEnCurso = false;
 let fusionada = null;
 let pistaIndices = [];
 let avatarTemporal = null;
+let sesionOnline = null;
+let temporizadorNube = null;
+let versionNube = 0;
+let versionGuardadaNube = 0;
+let sincronizacionEnCurso = false;
+let sincronizandoDesdeNube = false;
+const CLAVE_DUENO_NUBE = 'merge-cocina-cuenta-online-v1';
+const CLAVE_NUBE_SUCIO = 'merge-cocina-cuenta-online-dirty-v1';
+const LOGROS_PUBLICOS = new Set(['primer-pedido', 'ruta-de-sabores', 'gran-banquete', 'tesoro-de-cocina']);
+let eventosPedidoPendientes = restaurarEventosPedido();
+let clasificacionSemanalActual = [];
+let clasificacionHistoricaActual = [];
+let periodoClasificacion = 'weekly';
 const boardElement = document.querySelector('#board');
 const messageElement = document.querySelector('#game-message');
 const ordersListElement = document.querySelector('#orders-list');
@@ -73,6 +104,7 @@ function mostrarVistaCentro(id) {
   hubScreen.querySelectorAll('.hub-view').forEach((view) => { view.hidden = view.id !== id; });
   document.querySelector('#edit-profile-button').hidden = id === 'profile-view';
   if (id === 'profile-view') renderPerfilVista();
+  if (id === 'social-view') void cargarPanelSocial();
 }
 
 function renderCentro() {
@@ -206,19 +238,21 @@ function restaurarCosmeticos() {
   }
 }
 
+function datosCosmeticos() {
+  return {
+    desbloqueados: [...coleccion.desbloqueados],
+    equipado: coleccion.equipado,
+    marcosDesbloqueados: [...coleccion.marcosDesbloqueados],
+    marcoPerfil: coleccion.marcoPerfil,
+    iconosDesbloqueados: [...coleccion.iconosDesbloqueados],
+    iconoPerfil: coleccion.iconoPerfil,
+  };
+}
+
 function guardarCosmeticos() {
-  try {
-    localStorage.setItem(CLAVE_COSMETICOS, JSON.stringify({
-      desbloqueados: [...coleccion.desbloqueados],
-      equipado: coleccion.equipado,
-      marcosDesbloqueados: [...coleccion.marcosDesbloqueados],
-      marcoPerfil: coleccion.marcoPerfil,
-      iconosDesbloqueados: [...coleccion.iconosDesbloqueados],
-      iconoPerfil: coleccion.iconoPerfil,
-    }));
-  } catch (error) {
-    console.warn('No se pudieron guardar los estilos en este navegador.', error);
-  }
+  try { localStorage.setItem(CLAVE_COSMETICOS, JSON.stringify(datosCosmeticos())); }
+  catch (error) { console.warn('No se pudieron guardar los estilos en este navegador.', error); }
+  programarGuardadoNube();
 }
 
 function aplicarTemaTablero() {
@@ -547,11 +581,16 @@ function restaurarPerfil() {
 function guardarPerfil() {
   try { localStorage.setItem(CLAVE_PERFIL, JSON.stringify(perfil)); }
   catch (error) { console.warn('No se pudo guardar el perfil en este navegador.', error); }
+  programarGuardadoNube();
 }
 
 function renderPerfilVista() {
   if (!perfil) return;
   document.querySelector('#profile-display-name').textContent = perfil.nombre;
+  document.querySelector('#profile-account-status').textContent = sesionOnline
+    ? 'Cuenta conectada con Google. Tu apodo y tus estadísticas del juego son visibles para otros jugadores.'
+    : 'Perfil guardado en este dispositivo.';
+  document.querySelector('#sign-out-button').hidden = !sesionOnline;
   document.querySelector('#profile-display-age').textContent = `${perfil.edad} años`;
   document.querySelector('#profile-display-description').textContent = perfil.descripcion || 'Todavía no has escrito una descripción.';
   document.querySelector('#profile-description-input').value = perfil.descripcion || '';
@@ -735,11 +774,9 @@ function restaurarProgreso() {
 }
 
 function guardarProgreso() {
-  try {
-    localStorage.setItem(CLAVE_PROGRESO, JSON.stringify(juego.serializar()));
-  } catch (error) {
-    console.warn('No se pudo guardar el progreso en este navegador.', error);
-  }
+  try { localStorage.setItem(CLAVE_PROGRESO, JSON.stringify(juego.serializar())); }
+  catch (error) { console.warn('No se pudo guardar el progreso en este navegador.', error); }
+  programarGuardadoNube();
 }
 
 function restaurarLogrosDesbloqueados() {
@@ -752,11 +789,9 @@ function restaurarLogrosDesbloqueados() {
 }
 
 function guardarLogrosDesbloqueados() {
-  try {
-    localStorage.setItem(CLAVE_LOGROS, JSON.stringify([...logrosDesbloqueados]));
-  } catch (error) {
-    console.warn('No se pudieron guardar los logros en este navegador.', error);
-  }
+  try { localStorage.setItem(CLAVE_LOGROS, JSON.stringify([...logrosDesbloqueados])); }
+  catch (error) { console.warn('No se pudieron guardar los logros en este navegador.', error); }
+  programarGuardadoNube();
 }
 
 function tocarCelda(indice) {
@@ -826,6 +861,7 @@ function generarPieza() {
 function entregarPedido(pedidoId) {
   const resultado = juego.entregar(pedidoId);
   if (!resultado.ok) return;
+  registrarEventoPedido();
   seleccionada = null;
   pistaIndices = [];
   messageElement.textContent = resultado.derrota
@@ -893,6 +929,502 @@ function textoDerrota(derrota) {
     : 'Te quedaste sin movimientos. Se recargó el tablero y conservas los pedidos que ya entregaste.';
 }
 
+
+function actualizarEstadoCuenta(texto) {
+  const entrada = document.querySelector('#account-status');
+  const perfilEstado = document.querySelector('#profile-account-status');
+  if (entrada) entrada.textContent = texto;
+  if (perfilEstado) perfilEstado.textContent = texto;
+}
+
+function mostrarAccesoOnline() {
+  mostrarPerfil();
+  document.querySelector('#account-entry').hidden = false;
+  document.querySelector('#google-login-button').hidden = false;
+  document.querySelector('#local-profile-button').hidden = true;
+  profileForm.hidden = true;
+  actualizarEstadoCuenta('Entra con Google para recuperar tu cocina y jugar con amigos.');
+}
+
+function restaurarEventosPedido() {
+  try {
+    const lista = JSON.parse(localStorage.getItem(CLAVE_EVENTOS_PEDIDO));
+    return Array.isArray(lista)
+      ? lista.filter((evento) => evento && typeof evento.id === 'string' && /^[0-9a-f-]{36}$/i.test(evento.id)).slice(-5000)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function crearIdEvento() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hexadecimal = [...bytes].map((valor) => valor.toString(16).padStart(2, '0')).join('');
+  return hexadecimal.slice(0, 8) + '-' + hexadecimal.slice(8, 12) + '-' + hexadecimal.slice(12, 16)
+    + '-' + hexadecimal.slice(16, 20) + '-' + hexadecimal.slice(20);
+}
+
+function registrarEventoPedido() {
+  if (!sesionOnline?.user?.id) return;
+  eventosPedidoPendientes.push({ id: crearIdEvento() });
+  eventosPedidoPendientes = eventosPedidoPendientes.slice(-5000);
+  try { localStorage.setItem(CLAVE_EVENTOS_PEDIDO, JSON.stringify(eventosPedidoPendientes)); }
+  catch (error) { console.warn('No se pudo guardar la actividad pendiente.', error); }
+  programarGuardadoNube();
+}
+
+function elegirPeriodoClasificacion(periodo) {
+  periodoClasificacion = periodo;
+  renderClasificacionActual();
+}
+
+function limpiarDatosLocalesDeOtraCuenta() {
+  sincronizandoDesdeNube = true;
+  [CLAVE_PROGRESO, CLAVE_PERFIL, CLAVE_COSMETICOS, CLAVE_LOGROS, CLAVE_EVENTOS_PEDIDO, CLAVE_DUENO_NUBE, CLAVE_NUBE_SUCIO].forEach((clave) => localStorage.removeItem(clave));
+  eventosPedidoPendientes = [];
+  perfil = null;
+  juego.reiniciarPartida();
+  coleccion = restaurarCosmeticos();
+  logrosDesbloqueados = new Set();
+  sincronizandoDesdeNube = false;
+}
+
+function aplicarDatosDeCuenta(cuenta) {
+  if (!cuenta?.perfil || !cuenta?.guardado) return false;
+  const datos = cuenta.guardado;
+  sincronizandoDesdeNube = true;
+  try {
+    if (datos.game) {
+      juego.restaurar(datos.game);
+      localStorage.setItem(CLAVE_PROGRESO, JSON.stringify(juego.serializar()));
+    }
+    const datosPerfil = datos.profile && typeof datos.profile === 'object' ? datos.profile : {};
+    perfil = {
+      nombre: cuenta.perfil.nickname,
+      edad: Number.isInteger(datosPerfil.edad) ? datosPerfil.edad : 0,
+      descripcion: typeof datosPerfil.descripcion === 'string' ? datosPerfil.descripcion.slice(0, 180) : '',
+      avatar: typeof datosPerfil.avatar === 'string' && datosPerfil.avatar.startsWith('data:image/')
+        && datosPerfil.avatar.length <= 1000000 ? datosPerfil.avatar : '',
+      avatarMode: datosPerfil.avatarMode === 'icono' ? 'icono' : datosPerfil.avatar ? 'imagen' : 'icono',
+    };
+    localStorage.setItem(CLAVE_PERFIL, JSON.stringify(perfil));
+    if (datos.cosmetics) localStorage.setItem(CLAVE_COSMETICOS, JSON.stringify(datos.cosmetics));
+    coleccion = restaurarCosmeticos();
+    const idsLogros = Array.isArray(datos.achievements)
+      ? datos.achievements.filter((id) => typeof id === 'string')
+      : [];
+    logrosDesbloqueados = new Set(idsLogros);
+    localStorage.setItem(CLAVE_LOGROS, JSON.stringify(idsLogros));
+    aplicarTemaTablero();
+  } finally {
+    sincronizandoDesdeNube = false;
+  }
+  return true;
+}
+
+async function iniciarAplicacion() {
+  const accountEntry = document.querySelector('#account-entry');
+  const googleButton = document.querySelector('#google-login-button');
+  const localButton = document.querySelector('#local-profile-button');
+  if (!NUBE_CONFIGURADA) {
+    accountEntry.hidden = true;
+    profileForm.hidden = false;
+    renderEstado();
+    if (perfil) mostrarCentro();
+    else mostrarPerfil();
+    return;
+  }
+
+  accountEntry.hidden = false;
+  googleButton.hidden = false;
+  localButton.hidden = true;
+  profileForm.hidden = true;
+  mostrarAccesoOnline();
+
+  const retorno = await procesarRetornoGoogle();
+  if (retorno.error) actualizarEstadoCuenta(retorno.error.message);
+  try {
+    sesionOnline = await obtenerSesion();
+    if (!sesionOnline?.user?.id) {
+      if (localStorage.getItem(CLAVE_DUENO_NUBE) && perfil) {
+        renderEstado();
+        mostrarCentro();
+        actualizarEstadoCuenta('Sin conexión con Google. Puedes seguir jugando; la partida se sincronizará cuando vuelvas a entrar.');
+        return;
+      }
+      renderEstado();
+      mostrarAccesoOnline();
+      return;
+    }
+
+    const idUsuario = sesionOnline.user.id;
+    const propietarioLocal = localStorage.getItem(CLAVE_DUENO_NUBE);
+    if (propietarioLocal && propietarioLocal !== idUsuario) limpiarDatosLocalesDeOtraCuenta();
+
+    const cuenta = await cargarCuentaOnline(idUsuario);
+    const conservarCambiosLocales = localStorage.getItem(CLAVE_DUENO_NUBE) === idUsuario
+      && localStorage.getItem(CLAVE_NUBE_SUCIO) === '1';
+    if (cuenta.perfil && cuenta.guardado && !conservarCambiosLocales && aplicarDatosDeCuenta(cuenta)) {
+      localStorage.setItem(CLAVE_DUENO_NUBE, idUsuario);
+      googleButton.hidden = true;
+      accountEntry.hidden = true;
+      renderEstado();
+      mostrarCentro();
+      actualizarEstadoCuenta('Tu progreso se sincronizó con tu cuenta de Google.');
+      return;
+    }
+    if (cuenta.perfil && cuenta.guardado && conservarCambiosLocales) {
+      perfil = { ...perfil, nombre: cuenta.perfil.nickname };
+      localStorage.setItem(CLAVE_PERFIL, JSON.stringify(perfil));
+      versionNube += 1;
+      localStorage.setItem(CLAVE_DUENO_NUBE, idUsuario);
+      googleButton.hidden = true;
+      accountEntry.hidden = true;
+      renderEstado();
+      mostrarCentro();
+      actualizarEstadoCuenta('Encontramos una partida reciente guardada aquí y la vamos a sincronizar con tu cuenta.');
+      void sincronizarNubeAhora();
+      return;
+    }
+
+    const apodoPrevio = cuenta.perfil?.nickname || perfil?.nombre || sesionOnline.user.user_metadata?.full_name || '';
+    const apodoLimpio = String(apodoPrevio).replace(/[^A-Za-z0-9_]/g, '').slice(0, 20);
+    mostrarPerfil();
+    accountEntry.hidden = false;
+    googleButton.hidden = true;
+    profileForm.hidden = false;
+    document.querySelector('#profile-title').textContent = 'Elige tu apodo';
+    document.querySelector('#player-name').value = apodoLimpio;
+    document.querySelector('#player-age').value = perfil?.edad || '';
+    actualizarEstadoCuenta('Cuenta de Google conectada. Elige un apodo público para terminar y guardar tu progreso.');
+  } catch (error) {
+    console.error('No se pudo abrir la cuenta en línea.', error);
+    if (localStorage.getItem(CLAVE_DUENO_NUBE) && perfil) {
+      renderEstado();
+      mostrarCentro();
+      actualizarEstadoCuenta('La nube no está disponible. Tu partida sigue guardada en este dispositivo y se sincronizará al reconectar.');
+      return;
+    }
+    mostrarAccesoOnline();
+    actualizarEstadoCuenta(error.message || 'No pudimos conectar con tu cuenta. Comprueba la conexión e inténtalo de nuevo.');
+  }
+}
+
+function serializarDatosPrivados() {
+  return {
+    game: juego.serializar(),
+    profile: perfil ? { ...perfil } : null,
+    cosmetics: datosCosmeticos(),
+    achievements: [...logrosDesbloqueados],
+  };
+}
+
+function programarGuardadoNube() {
+  if (!NUBE_CONFIGURADA || !perfil || sincronizandoDesdeNube) return;
+  if (localStorage.getItem(CLAVE_DUENO_NUBE)) localStorage.setItem(CLAVE_NUBE_SUCIO, '1');
+  if (!sesionOnline?.user?.id) return;
+  versionNube += 1;
+  window.clearTimeout(temporizadorNube);
+  temporizadorNube = window.setTimeout(() => { void sincronizarNubeAhora(); }, 650);
+}
+
+async function sincronizarNubeAhora() {
+  if (!NUBE_CONFIGURADA || !sesionOnline?.user?.id || !perfil || sincronizandoDesdeNube) return;
+  window.clearTimeout(temporizadorNube);
+  if (sincronizacionEnCurso) return;
+  sincronizacionEnCurso = true;
+  try {
+    while (versionGuardadaNube < versionNube) {
+      const versionActual = versionNube;
+      const pedidosCompletados = juego.nivel.pedidos.length - juego.pedidosRestantes.size;
+      const logrosImportantes = [...logrosDesbloqueados].filter((id) => LOGROS_PUBLICOS.has(id));
+      const eventosEnviados = [...eventosPedidoPendientes];
+      await guardarEstadoOnline({
+        nivel: juego.nivel.id,
+        pedidosCompletados,
+        pedidosTotales: juego.nivel.pedidos.length,
+        logrosImportantes,
+        monedas: juego.monedas,
+        datosPrivados: serializarDatosPrivados(),
+        eventosPedido: eventosEnviados,
+      });
+      const idsEnviados = new Set(eventosEnviados.map((evento) => evento.id));
+      eventosPedidoPendientes = eventosPedidoPendientes.filter((evento) => !idsEnviados.has(evento.id));
+      localStorage.setItem(CLAVE_EVENTOS_PEDIDO, JSON.stringify(eventosPedidoPendientes));
+      versionGuardadaNube = versionActual;
+      if (versionActual === versionNube) localStorage.removeItem(CLAVE_NUBE_SUCIO);
+      actualizarEstadoCuenta('Partida sincronizada. Puedes continuar en otro dispositivo con esta cuenta.');
+    }
+  } catch (error) {
+    console.warn('La partida sigue guardada localmente; la sincronización se volverá a intentar.', error);
+    actualizarEstadoCuenta('Sin conexión con la nube. Tu partida sigue guardada aquí y se sincronizará al volver a conectarte.');
+    if (navigator.onLine) window.setTimeout(() => { if (versionGuardadaNube < versionNube) void sincronizarNubeAhora(); }, 8000);
+  } finally {
+    sincronizacionEnCurso = false;
+  }
+}
+
+function crearTarjetaJugador(jugador, { tipo = 'leaderboard', relacion = null } = {}) {
+  const tarjeta = document.createElement('article');
+  tarjeta.className = 'social-player-card glass-card';
+  const identidad = document.createElement('div');
+  identidad.className = 'social-player-identity';
+  const apodo = document.createElement('h4');
+  apodo.textContent = jugador.nickname || 'Chef';
+  const nivel = document.createElement('strong');
+  nivel.textContent = 'Nivel ' + Number(jugador.current_level || 1);
+  identidad.append(apodo, nivel);
+
+  const avance = document.createElement('p');
+  avance.className = 'social-player-progress';
+  avance.textContent = (Number(jugador.orders_completed) || 0) + ' / ' + (Number(jugador.orders_total) || 0) + ' pedidos de este nivel';
+  if (Number.isFinite(Number(jugador.weekly_orders))) {
+    avance.textContent += ' · ' + Number(jugador.weekly_orders) + ' esta semana';
+  }
+  const monedas = document.createElement('p');
+  monedas.className = 'social-player-coins';
+  monedas.textContent = '🪙 ' + formatoMonedas.format(Number(jugador.coins) || 0);
+  const detalles = document.createElement('div');
+  detalles.className = 'social-player-details';
+  detalles.append(avance, monedas);
+
+  const insignias = document.createElement('div');
+  insignias.className = 'social-player-achievements';
+  const logrosPorId = new Map(crearLogros().map((logro) => [logro.id, logro]));
+  const ids = Array.isArray(jugador.important_achievements) ? jugador.important_achievements : [];
+  ids.filter((id) => LOGROS_PUBLICOS.has(id)).slice(0, 4).forEach((id) => {
+    const logro = logrosPorId.get(id);
+    if (!logro) return;
+    const insignia = document.createElement('span');
+    insignia.className = 'social-achievement-badge';
+    insignia.textContent = logro.icono + ' ' + logro.titulo;
+    insignia.title = logro.titulo;
+    insignias.append(insignia);
+  });
+  if (!insignias.childElementCount) {
+    const ninguno = document.createElement('span');
+    ninguno.className = 'form-note';
+    ninguno.textContent = 'Sin logros destacados todavía';
+    insignias.append(ninguno);
+  }
+
+  tarjeta.append(identidad, detalles, insignias);
+  const boton = document.createElement('div');
+  boton.className = 'social-player-actions';
+  if (tipo === 'search') {
+    const idRelacion = jugador.friendship_id || relacion?.friendship_id;
+    const estadoRelacion = jugador.friendship_status || relacion?.status || null;
+    const accion = document.createElement('button');
+    accion.type = 'button';
+    accion.className = 'cosmetic-button';
+    if (estadoRelacion === 'accepted') {
+      accion.textContent = '✓ Amigo';
+      accion.disabled = true;
+    } else if (estadoRelacion === 'pending') {
+      accion.textContent = relacion?.recipient_id === sesionOnline?.user?.id ? 'Solicitud recibida' : 'Solicitud pendiente';
+      accion.disabled = true;
+    } else {
+      accion.textContent = 'Agregar amigo';
+      accion.addEventListener('click', async () => {
+        accion.disabled = true;
+        try {
+          if (idRelacion) await eliminarAmistad(idRelacion);
+          await solicitarAmistad(jugador.player_id);
+          document.querySelector('#social-feedback').textContent = 'Solicitud enviada a ' + jugador.nickname + '.';
+          await cargarPanelSocial();
+          const query = document.querySelector('#player-search-input').value.trim();
+          if (query) await ejecutarBusquedaJugadores(query);
+        } catch (error) {
+          accion.disabled = false;
+          document.querySelector('#social-feedback').textContent = error.message;
+        }
+      });
+    }
+    boton.append(accion);
+  } else if (tipo === 'incoming' && relacion) {
+    const aceptar = document.createElement('button');
+    aceptar.type = 'button';
+    aceptar.className = 'cosmetic-button';
+    aceptar.textContent = 'Aceptar';
+    aceptar.addEventListener('click', async () => {
+      aceptar.disabled = true;
+      try {
+        await responderSolicitudAmistad(relacion.friendship_id, true);
+        await cargarPanelSocial();
+      } catch (error) {
+        aceptar.disabled = false;
+        document.querySelector('#social-feedback').textContent = error.message;
+      }
+    });
+    const rechazar = document.createElement('button');
+    rechazar.type = 'button';
+    rechazar.className = 'quiet-button';
+    rechazar.textContent = 'Rechazar';
+    rechazar.addEventListener('click', async () => {
+      rechazar.disabled = true;
+      try {
+        await eliminarAmistad(relacion.friendship_id);
+        await cargarPanelSocial();
+      } catch (error) {
+        rechazar.disabled = false;
+        document.querySelector('#social-feedback').textContent = error.message;
+      }
+    });
+    boton.append(aceptar, rechazar);
+  } else if (tipo === 'friend' && relacion) {
+    const eliminar = document.createElement('button');
+    eliminar.type = 'button';
+    eliminar.className = 'quiet-button';
+    eliminar.textContent = 'Quitar amigo';
+    eliminar.addEventListener('click', async () => {
+      eliminar.disabled = true;
+      try {
+        await eliminarAmistad(relacion.friendship_id);
+        await cargarPanelSocial();
+      } catch (error) {
+        eliminar.disabled = false;
+        document.querySelector('#social-feedback').textContent = error.message;
+      }
+    });
+    boton.append(eliminar);
+  }
+  if (boton.childElementCount) tarjeta.append(boton);
+  return tarjeta;
+}
+
+function renderClasificacionActual() {
+  renderListaJugadores(
+    document.querySelector('#leaderboard-list'),
+    periodoClasificacion === 'weekly' ? clasificacionSemanalActual : clasificacionHistoricaActual,
+    'leaderboard',
+  );
+  const semanal = document.querySelector('#ranking-weekly-button');
+  const historico = document.querySelector('#ranking-alltime-button');
+  semanal.classList.toggle('selected', periodoClasificacion === 'weekly');
+  historico.classList.toggle('selected', periodoClasificacion === 'all-time');
+  semanal.setAttribute('aria-pressed', String(periodoClasificacion === 'weekly'));
+  historico.setAttribute('aria-pressed', String(periodoClasificacion === 'all-time'));
+}
+
+function mostrarEstadoVacio(contenedor, texto) {
+  const mensaje = document.createElement('p');
+  mensaje.className = 'form-note social-empty';
+  mensaje.textContent = texto;
+  contenedor.replaceChildren(mensaje);
+}
+
+function renderListaJugadores(contenedor, jugadores, tipo) {
+  contenedor.replaceChildren();
+  if (!jugadores?.length) {
+    mostrarEstadoVacio(contenedor, 'Todavía no hay jugadores para mostrar.');
+    return;
+  }
+  jugadores.forEach((jugador) => contenedor.append(crearTarjetaJugador(jugador, { tipo, relacion: jugador.relacion })));
+}
+
+async function cargarPanelSocial() {
+  const feedback = document.querySelector('#social-feedback');
+  if (!NUBE_CONFIGURADA || !sesionOnline) {
+    feedback.textContent = 'Conecta tu cuenta de Google para buscar amigos y ver la clasificación.';
+    return;
+  }
+  feedback.textContent = 'Cargando amigos y clasificación…';
+  try {
+    const [relaciones, semanal, historica] = await Promise.all([
+      cargarAmistades(),
+      cargarClasificacionSemanal(),
+      cargarClasificacion(),
+    ]);
+    clasificacionSemanalActual = semanal;
+    clasificacionHistoricaActual = historica;
+    const entrantes = relaciones.filter((item) => item.status === 'pending' && item.recipient_id === sesionOnline.user.id);
+    const aceptadas = relaciones.filter((item) => item.status === 'accepted');
+    const salientes = relaciones.filter((item) => item.status === 'pending' && item.requester_id === sesionOnline.user.id);
+    const incomingList = document.querySelector('#incoming-friend-requests');
+    const friendList = document.querySelector('#friend-list');
+    const outgoingList = document.querySelector('#outgoing-friend-requests');
+    renderListaJugadores(incomingList, entrantes.map((item) => ({
+      player_id: item.other_user_id,
+      nickname: item.nickname,
+      current_level: item.current_level,
+      orders_completed: item.orders_completed,
+      orders_total: item.orders_total,
+      important_achievements: item.important_achievements,
+      coins: item.coins,
+      friendship_id: item.friendship_id,
+      relacion: item,
+    })), 'incoming');
+    friendList.replaceChildren();
+    if (!aceptadas.length) mostrarEstadoVacio(friendList, 'Cuando agregues amigos, aparecerán aquí.');
+    aceptadas.forEach((item) => friendList.append(crearTarjetaJugador({
+      player_id: item.other_user_id,
+      nickname: item.nickname,
+      current_level: item.current_level,
+      orders_completed: item.orders_completed,
+      orders_total: item.orders_total,
+      important_achievements: item.important_achievements,
+      coins: item.coins,
+    }, { tipo: 'friend', relacion: item })));
+    renderListaJugadores(outgoingList, salientes.map((item) => ({
+      player_id: item.other_user_id,
+      nickname: item.nickname,
+      current_level: item.current_level,
+      orders_completed: item.orders_completed,
+      orders_total: item.orders_total,
+      important_achievements: item.important_achievements,
+      coins: item.coins,
+    })), 'leaderboard');
+    renderClasificacionActual();
+    feedback.textContent = 'Clasificación actualizada. Se muestran solo apodo y estadísticas del juego.';
+  } catch (error) {
+    console.error('No se pudo cargar el panel social.', error);
+    feedback.textContent = error.message || 'No se pudo cargar la clasificación. Inténtalo de nuevo.';
+  }
+}
+
+async function ejecutarBusquedaJugadores(apodo) {
+  const resultados = document.querySelector('#player-search-results');
+  resultados.replaceChildren();
+  if (!NUBE_CONFIGURADA || !sesionOnline) {
+    mostrarEstadoVacio(resultados, 'Conecta tu cuenta para buscar jugadores.');
+    return;
+  }
+  try {
+    const jugadores = await buscarJugadores(apodo);
+    renderListaJugadores(resultados, jugadores, 'search');
+    if (!jugadores.length) mostrarEstadoVacio(resultados, 'No encontramos apodos que empiecen con «' + apodo + '».');
+  } catch (error) {
+    document.querySelector('#social-feedback').textContent = error.message;
+  }
+}
+
+
+document.querySelector('#google-login-button').addEventListener('click', async () => {
+  if (!NUBE_CONFIGURADA) return;
+  actualizarEstadoCuenta('Abriendo Google…');
+  try { await iniciarSesionGoogle(); }
+  catch (error) { actualizarEstadoCuenta(error.message || 'No se pudo iniciar sesión con Google.'); }
+});
+document.querySelector('#sign-out-button').addEventListener('click', async () => {
+  await sincronizarNubeAhora();
+  await cerrarSesionOnline();
+  sesionOnline = null;
+  mostrarAccesoOnline();
+});
+document.querySelector('#player-search-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const apodo = document.querySelector('#player-search-input').value.trim();
+  if (apodo.length < 3) return;
+  document.querySelector('#social-feedback').textContent = 'Buscando jugadores…';
+  await ejecutarBusquedaJugadores(apodo);
+});
+document.querySelector('#refresh-social-button').addEventListener('click', () => { void cargarPanelSocial(); });
+document.querySelector('#ranking-weekly-button').addEventListener('click', () => elegirPeriodoClasificacion('weekly'));
+document.querySelector('#ranking-alltime-button').addEventListener('click', () => elegirPeriodoClasificacion('all-time'));
+
 document.querySelector('#generate-button').addEventListener('click', generarPieza);
 hintButton.addEventListener('click', mostrarPista);
 document.querySelector('#shop-moves-button').addEventListener('click', () => {
@@ -935,15 +1467,39 @@ profileDetailsForm.addEventListener('submit', (event) => {
   renderPerfilVista();
   document.querySelector('#profile-feedback').textContent = 'Tu perfil se guardó en este dispositivo.';
 });
-profileForm.addEventListener('submit', (event) => {
+profileForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const nombre = document.querySelector('#player-name').value.trim();
   const edad = Number(document.querySelector('#player-age').value);
-  if (!nombre || !Number.isInteger(edad) || edad < 1 || edad > 120) return;
-  perfil = { nombre, edad, descripcion: '', avatar: '', avatarMode: 'icono' };
-  guardarPerfil();
-  mostrarCentro();
+  if (!nombre || nombre.length < 3 || nombre.length > 20 || !/^[A-Za-z0-9_]+$/.test(nombre)
+      || !Number.isInteger(edad) || edad < 1 || edad > 120) return;
+
+  const feedback = document.querySelector('#account-status');
+  try {
+    if (NUBE_CONFIGURADA && sesionOnline) {
+      feedback.textContent = 'Preparando tu cuenta y guardando tu partida…';
+      await crearPerfilOnline(nombre);
+    }
+    const perfilAnterior = perfil;
+    perfil = {
+      nombre,
+      edad,
+      descripcion: perfilAnterior?.descripcion || '',
+      avatar: perfilAnterior?.avatar || '',
+      avatarMode: perfilAnterior?.avatarMode || 'icono',
+    };
+    guardarPerfil();
+    if (NUBE_CONFIGURADA && sesionOnline) {
+      localStorage.setItem(CLAVE_DUENO_NUBE, sesionOnline.user.id);
+      await sincronizarNubeAhora();
+      feedback.textContent = 'Cuenta lista. Tu progreso se sincronizará en este dispositivo.';
+    }
+    mostrarCentro();
+  } catch (error) {
+    feedback.textContent = error.message || 'No se pudo crear el perfil. Inténtalo de nuevo.';
+  }
 });
+
 document.querySelector('#edit-profile-button').addEventListener('click', () => {
   profileScreen.hidden = true;
   hubScreen.hidden = false;
@@ -989,12 +1545,13 @@ document.querySelector('#restart-button').addEventListener('click', () => {
 });
 
 window.addEventListener('pagehide', guardarProgreso);
+window.addEventListener('online', () => {
+  if (versionGuardadaNube < versionNube) void sincronizarNubeAhora();
+});
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') guardarProgreso();
 });
 
 iniciarAnunciosH5();
-renderEstado();
-if (perfil) mostrarCentro();
-else mostrarPerfil();
+void iniciarAplicacion();
 

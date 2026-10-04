@@ -21,6 +21,12 @@ Un juego casual de cocina para combinar ingredientes, completar pedidos y pasar 
 - Al quedarse sin movimientos se registra una derrota. La segunda derrota reinicia los pedidos del nivel actual; el nivel, las monedas y las estrellas se conservan.
 - La tienda muestra nueve paquetes de monedas entre US$0,50 y US$200 con sus cantidades. Los botones siguen desactivados: falta integrar un proveedor de pagos y un backend que verifique cobros antes de acreditar monedas.
 
+## Cuenta, progreso sincronizado y amigos
+
+El proyecto incluye inicio de sesión con Google mediante Supabase, perfil público por apodo, guardado privado entre dispositivos, solicitudes de amistad, una clasificación semanal y otra histórica. Solo se publican el apodo, el nivel, el avance de pedidos, cuatro logros destacados y las monedas. Correo y edad nunca se incluyen en las consultas públicas. La clasificación semanal suma pedidos entregados y el histórico ordena por nivel, avance y monedas.
+
+Para activar el servicio, sigue los pasos de [SUPABASE_SETUP.md](SUPABASE_SETUP.md): ejecutar la migración SQL, configurar el proveedor Google en Supabase y agregar las dos variables públicas a Vercel. Sin esas variables, el modo local continúa disponible. No agregues claves secretas a variables VITE_.
+
 ## Requisitos
 
 - Node.js 20.19 o posterior.

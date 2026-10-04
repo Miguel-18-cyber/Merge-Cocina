@@ -19,13 +19,18 @@
         <div class="entry-brand" aria-hidden="true">🍳</div>
         <p class="eyebrow accent">BIENVENIDO A LA COCINA</p>
         <h1 id="profile-title">¿Quién va a jugar?</h1>
-        <p class="screen-copy">Crea tu perfil y guarda tu aventura de cocina en este dispositivo.</p>
+        <p class="screen-copy">Entra con Google, crea un apodo y continúa tu aventura desde cualquiera de tus dispositivos.</p>
+        <div id="account-entry" class="account-entry" hidden>
+          <button id="google-login-button" class="primary-button google-login-button" type="button"><span aria-hidden="true">G</span> Continuar con Google</button>
+          <p id="account-status" class="form-note" role="status" aria-live="polite">Tu correo no se mostrará en el juego.</p>
+          <button id="local-profile-button" class="quiet-button" type="button" hidden>Jugar solo en este dispositivo</button>
+        </div>
         <form id="profile-form" class="profile-form">
-          <label for="player-name">Tu nombre</label>
-          <input id="player-name" name="name" type="text" maxlength="24" autocomplete="given-name" placeholder="Por ejemplo, Alex" required />
+          <label for="player-name">Tu apodo público</label>
+          <input id="player-name" name="name" type="text" maxlength="20" minlength="3" pattern="[A-Za-z0-9_]{3,20}" autocomplete="nickname" placeholder="Por ejemplo, ChefAlex" required />
           <label for="player-age">Tu edad</label>
           <input id="player-age" name="age" type="number" min="1" max="120" inputmode="numeric" placeholder="Tu edad" required />
-          <p class="form-note">Tu perfil se guarda en este dispositivo y no aparece públicamente.</p>
+          <p class="form-note">Usa de 3 a 20 letras, números o guiones bajos. Tu edad se mantiene privada; el público solo verá tu apodo y tus estadísticas del juego.</p>
           <button class="primary-button" type="submit">Continuar <span aria-hidden="true">→</span></button>
         </form>
       </section>
@@ -47,6 +52,7 @@
           </div>
           <div class="hub-menu">
             <button id="play-button" class="hub-action play-action" type="button"><span class="hub-action-icon">🧩</span><span><strong id="play-title">Continuar partida</strong><small id="play-copy">Combina ingredientes y completa pedidos</small></span><span class="action-arrow">→</span></button>
+            <button class="hub-action" data-view="social-view" type="button"><span class="hub-action-icon">👥</span><span><strong>Amigos y clasificación</strong><small>Busca jugadores y compara tu avance</small></span><span class="action-arrow">→</span></button>
             <button class="hub-action" data-view="achievements-view" type="button"><span class="hub-action-icon">🏆</span><span><strong>Mis logros</strong><small>Revisa tus metas de cocina</small></span><span class="action-arrow">→</span></button>
             <button class="hub-action" data-view="shop-view" type="button"><span class="hub-action-icon">🛍️</span><span><strong>Tienda</strong><small>Monedas y artículos para tu partida</small></span><span class="action-arrow">→</span></button>
           </div>
@@ -56,6 +62,21 @@
           <p class="eyebrow accent">TUS METAS</p><h2 id="achievements-title">Logros</h2>
           <p class="screen-copy">Sigue jugando para completar tus insignias.</p>
           <div id="achievements-list" class="achievement-list"></div>
+        </section>
+        <section id="social-view" class="hub-view detail-view social-view" aria-labelledby="social-title" hidden>
+          <button class="back-button" data-view="dashboard-view" type="button">← Menú</button>
+          <p class="eyebrow accent">JUEGA CON MÁS CHEFS</p><h2 id="social-title">Amigos y clasificación</h2>
+          <p class="screen-copy">Tu apodo, nivel, avance, logros destacados y monedas forman tu perfil público. El correo y la edad son privados.</p>
+          <form id="player-search-form" class="social-search-form">
+            <label for="player-search-input">Buscar por apodo</label>
+            <div class="social-search-row"><input id="player-search-input" type="search" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" placeholder="Escribe al menos 3 caracteres" autocomplete="off" required /><button class="primary-button" type="submit">Buscar</button></div>
+          </form>
+          <p id="social-feedback" class="form-note" role="status" aria-live="polite"></p>
+          <section class="social-section" aria-labelledby="search-results-title"><h3 id="search-results-title">Resultados</h3><div id="player-search-results" class="social-list"></div></section>
+          <section class="social-section" aria-labelledby="incoming-title"><h3 id="incoming-title">Solicitudes recibidas</h3><div id="incoming-friend-requests" class="social-list"></div></section>
+          <section class="social-section" aria-labelledby="friends-title"><h3 id="friends-title">Mis amigos</h3><div id="friend-list" class="social-list"></div></section>
+          <section class="social-section" aria-labelledby="outgoing-title"><h3 id="outgoing-title">Solicitudes enviadas</h3><div id="outgoing-friend-requests" class="social-list"></div></section>
+          <section class="social-section" aria-labelledby="leaderboard-title"><div class="social-heading"><h3 id="leaderboard-title">Clasificación global</h3><button id="refresh-social-button" class="quiet-button" type="button">Actualizar</button></div><div class="ranking-tabs" role="group" aria-label="Periodo de clasificación"><button id="ranking-weekly-button" class="ranking-tab selected" type="button" aria-pressed="true">Esta semana</button><button id="ranking-alltime-button" class="ranking-tab" type="button" aria-pressed="false">Histórico</button></div><div id="leaderboard-list" class="social-list"></div></section>
         </section>
         <section id="shop-view" class="hub-view detail-view" aria-labelledby="shop-title" hidden>
           <button class="back-button" data-view="dashboard-view" type="button">← Menú</button>
@@ -82,6 +103,8 @@
           <button class="back-button" data-view="dashboard-view" type="button">← Menú</button>
           <p class="eyebrow accent">TU CUENTA DE COCINA</p>
           <h2 id="profile-view-title">Mi perfil</h2>
+          <p id="profile-account-status" class="form-note" role="status" aria-live="polite"></p>
+          <button id="sign-out-button" class="quiet-button sign-out-button" type="button" hidden>Cerrar sesión</button>
           <div class="profile-summary glass-card">
             <div id="profile-avatar" class="profile-avatar" data-frame="perfil-clasico">
               <img id="profile-avatar-image" alt="Foto de perfil" hidden />
