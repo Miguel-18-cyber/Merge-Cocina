@@ -972,7 +972,7 @@ function limpiarDatosLocalesDeOtraCuenta() {
   sincronizandoDesdeNube = true;
   [CLAVE_PROGRESO, CLAVE_PERFIL, CLAVE_COSMETICOS, CLAVE_LOGROS, CLAVE_EVENTOS_PEDIDO, CLAVE_DUENO_NUBE, CLAVE_NUBE_SUCIO].forEach((clave) => localStorage.removeItem(clave));
   perfil = null;
-  juego.reiniciarPartida();
+  juego.reiniciarPartida({ conservarRecord: false });
   coleccion = restaurarCosmeticos();
   logrosDesbloqueados = new Set();
   sincronizandoDesdeNube = false;
@@ -1520,7 +1520,7 @@ document.querySelector('#dialog-menu-button').addEventListener('click', () => {
 });
 
 document.querySelector('#restart-button').addEventListener('click', () => {
-  if (!window.confirm('¿Reiniciar el progreso de la partida? Se borrarán el nivel, las monedas, las estrellas y el tablero. Tus marcos y estilos comprados se conservarán.')) return;
+  if (!window.confirm('¿Reiniciar el progreso de la partida? Se borrarán el nivel, las monedas, las estrellas, los puntos y el tablero. Se conservarán tu récord personal, marcos y estilos comprados.')) return;
   juego.reiniciarPartida();
   seleccionada = null;
   pistaIndices = [];
