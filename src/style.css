@@ -552,3 +552,392 @@ button:focus-visible { outline: 3px solid rgba(85,215,195,.85); outline-offset: 
 .ranking-tab { min-height: 38px; padding: 0 13px; border: 1px solid var(--glass-edge); border-radius: 12px; background: rgba(255,255,255,.045); color: #c8cee7; cursor: pointer; font: inherit; font-size: 12px; }
 .ranking-tab.selected { border-color: rgba(25,195,177,.55); background: rgba(25,195,177,.14); color: #e6fffb; }
 .ranking-tab:focus-visible { outline: 3px solid rgba(25,195,177,.55); outline-offset: 2px; }
+
+
+/* Tema pastel opaco: superficies sólidas y texto de alto contraste. */
+:root {
+  color-scheme: light;
+  color: #514456;
+  background: #fbf6ee;
+  --muted: #786c7b;
+  --glass: #fffdf8;
+  --glass-edge: #e4d8c9;
+  --coral: #cf7e89;
+  --violet: #a18bc0;
+  --teal: #6f9b7a;
+  --pastel-cream: #fbf6ee;
+  --pastel-paper: #fffdf8;
+  --pastel-rose: #f5dfe3;
+  --pastel-mint: #e2efe4;
+  --pastel-lavender: #eee8f4;
+  --pastel-butter: #f7edcf;
+  --pastel-ink: #514456;
+  --pastel-muted: #786c7b;
+}
+body {
+  color: #514456 !important;
+  background: #fbf6ee !important;
+}
+body::before,
+body::after { display: none !important; content: none !important; }
+body :is(h1, h2, h3, h4, p, label, strong, small, span, button, output) {
+  color: #514456 !important;
+}
+h1, h2, h3, h4 { color: #493d50 !important; }
+.eyebrow,
+footer,
+.header-stat,
+.header-stat small,
+.level-hint,
+.order-count,
+.game-message,
+.screen-copy,
+.profile-form label,
+.form-note,
+.player-level small,
+.hub-stat small,
+.hub-action small,
+.achievement-copy p,
+.shop-section-heading > span,
+.move-pack p,
+.shop-pack p,
+.cosmetic-details > p:last-child,
+.profile-summary-copy p,
+.profile-edit-form label span,
+.social-player-details,
+.social-search-form label,
+.social-empty,
+.coin-purchase-note {
+  color: #786c7b !important;
+}
+.header-stat strong,
+.order-name,
+.profile-summary-copy h3,
+.social-player-identity h4 { color: #493d50 !important; }
+.accent { color: #a35f70 !important; }
+
+/* Todas las tarjetas dejan de usar vidrio, transparencias y desenfoque. */
+.glass-card,
+.level-card,
+.orders-card,
+.board-card,
+.welcome-card,
+.hub-stat,
+.shop-balance,
+.move-pack,
+.shop-pack,
+.cosmetic-card,
+.achievement-card,
+.profile-summary,
+.profile-edit-form,
+.social-player-card {
+  border-color: #e4d8c9 !important;
+  background: #fffdf8 !important;
+  background-image: none !important;
+  box-shadow: 0 8px 22px #e9dfd3 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.brand-mark,
+.entry-brand,
+.hub-action-icon,
+.achievement-icon {
+  border-color: #ded2e7 !important;
+  background: #eee8f4 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+.topbar .brand-mark { color: #68527b !important; }
+.header-stats {
+  border-color: #e4d8c9 !important;
+  background: #f2ece4 !important;
+  background-image: none !important;
+}
+.reset-button,
+.quiet-button,
+.back-button,
+.profile-frame-option,
+.ranking-tab,
+.social-empty {
+  border-color: #ddd2e2 !important;
+  background: #f0eaf5 !important;
+  background-image: none !important;
+  color: #514456 !important;
+}
+.reset-button:hover,
+.quiet-button:hover,
+.back-button:hover,
+.profile-frame-option:hover:not(:disabled),
+.ranking-tab:hover {
+  border-color: #b9a6ca !important;
+  background: #e8def0 !important;
+}
+.reset-button:focus-visible,
+.quiet-button:focus-visible,
+.back-button:focus-visible,
+button:focus-visible {
+  outline-color: #6f9b7a !important;
+}
+.hub-action {
+  border-color: #ded2e7 !important;
+  background: #f4eff7 !important;
+  background-image: none !important;
+  color: #514456 !important;
+}
+.hub-action:hover { background: #ece4f2 !important; }
+.hub-action.play-action {
+  border-color: #e3b7bf !important;
+  background: #f7e6e8 !important;
+}
+.action-arrow { color: #8c759c !important; }
+.player-level {
+  border-color: #e8d49b !important;
+  background: #f8efd7 !important;
+}
+.player-level strong { color: #896b32 !important; }
+.hub-level-progress strong,
+.moves-meter-wrap strong { color: #514456 !important; }
+
+/* Tablero con casillas crema sólidas y estados pastel fáciles de distinguir. */
+.level-card,
+.orders-card { background: #fffdf8 !important; }
+.orders-progress {
+  border-color: #b8d4bf !important;
+  background: #e2efe4 !important;
+  color: #496b53 !important;
+}
+.order-item,
+.order-item:has(.deliver-button:not(:disabled)) {
+  border-color: #dfd4c8 !important;
+  background: #f5efe7 !important;
+}
+.order-item.done { background: #eee9e3 !important; }
+.order-food { background: #eee8f4 !important; }
+.board-card { background: #f0e9df !important; }
+.board-cell,
+.board-cell:not(.empty):not(.selected):not(.hinted) {
+  border-color: #dfd2c2 !important;
+  background: #f8edda !important;
+  background-image: none !important;
+  color: #514456 !important;
+  box-shadow: inset 0 1px #fffdf8 !important;
+}
+.board-cell.empty,
+.board-cell.empty:hover {
+  border-color: #ded4e5 !important;
+  background: #eee8f4 !important;
+  box-shadow: none !important;
+}
+.board-cell.selected {
+  border-color: #ca7f8d !important;
+  background: #f5dfe3 !important;
+  box-shadow: 0 0 0 2px #e9c2c9 !important;
+}
+.board-cell.hinted {
+  border-color: #c6a755 !important;
+  background: #f7edcf !important;
+  box-shadow: 0 0 0 2px #eadba9 !important;
+  animation: hint-pulse 1.2s ease-in-out infinite alternate;
+}
+.piece-level { color: #66586a !important; }
+.primary-button {
+  border-color: #b96775 !important;
+  background: #c87582 !important;
+  background-image: none !important;
+  box-shadow: 0 5px 0 #a95f6d !important;
+  color: #fffdf8 !important;
+}
+.primary-button:hover:not(:disabled) { background: #b96977 !important; }
+.primary-button:disabled { background: #c9bdc0 !important; color: #fff !important; }
+.action-cost {
+  border: 1px solid #e4d4a5;
+  background: #f7edcf !important;
+  color: #66552f !important;
+}
+.hint-button {
+  border-color: #dfcf9d !important;
+  background: #f7edcf !important;
+  color: #66552f !important;
+}
+.hint-button:hover { background: #f1e4bd !important; }
+.level-dialog {
+  border-color: #e4d8c9 !important;
+  background: #fffdf8 !important;
+  background-image: none !important;
+  box-shadow: 0 18px 50px #cfc2b8 !important;
+  color: #514456 !important;
+}
+.level-dialog::backdrop { background: #d8cfd5 !important; backdrop-filter: none !important; }
+.dialog-reward { color: #786c7b !important; }
+.game-message { color: #66586a !important; }
+
+/* Barras, tienda, perfil y opciones conservan la misma paleta sólida. */
+.hub-level-progress > span,
+.moves-meter,
+.achievement-track {
+  border-color: #ded4c8 !important;
+  background: #e9e2d9 !important;
+}
+.hub-level-progress > span > span,
+.moves-meter > span,
+.achievement-track > span {
+  background: #79a586 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+.deliver-button,
+.deliver-button:not(:disabled),
+.move-pack .shop-button {
+  border-color: #b7d2bd !important;
+  background: #e2efe4 !important;
+  color: #45634d !important;
+}
+.deliver-button:not(:disabled):hover,
+.move-pack .shop-button:hover:not(:disabled) { background: #d4e7d8 !important; }
+.shop-button,
+.shop-button:not(:disabled) {
+  border-color: #ddd2e2 !important;
+  background: #f0eaf5 !important;
+  color: #514456 !important;
+}
+.shop-button:not(:disabled):hover {
+  border-color: #b9a6ca !important;
+  background: #e8def0 !important;
+  color: #493d50 !important;
+}
+.shop-pack.featured-pack,
+.coin-pack.featured-pack {
+  border-color: #e5cf91 !important;
+  background: #f8efd7 !important;
+}
+.shop-balance strong { color: #493d50 !important; }
+.coin-pack .coin-pack-amount { color: #66586a !important; }
+.coin-pack .coin-pack-price { color: #896b32 !important; }
+.shop-feedback { color: #52775b !important; }
+.cosmetic-card.equipped,
+.achievement-card.unlocked {
+  border-color: #a9c9af !important;
+  background: #e7f1e7 !important;
+}
+.cosmetic-preview,
+.cosmetic-preview[data-skin],
+.profile-frame-preview,
+.profile-frame-preview[data-frame] {
+  border-color: #c7b5d4 !important;
+  background: #eee8f4 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+.cosmetic-preview > span,
+.cosmetic-preview[data-skin] > span,
+.profile-frame-preview > span {
+  border-color: #d9cce2 !important;
+  background: #f8f3fa !important;
+  box-shadow: none !important;
+}
+.profile-icon-preview,
+.profile-icon-shop-list .cosmetic-card:nth-child(4n + 1) .profile-icon-preview,
+.profile-icon-shop-list .cosmetic-card:nth-child(4n + 2) .profile-icon-preview,
+.profile-icon-shop-list .cosmetic-card:nth-child(4n + 3) .profile-icon-preview,
+.profile-icon-shop-list .cosmetic-card:nth-child(4n) .profile-icon-preview {
+  border-color: #d8c8e5 !important;
+  background: #eee8f4 !important;
+  background-image: none !important;
+}
+.profile-icon-preview > span { background: #f8f3fa !important; }
+.cosmetic-button {
+  border-color: #e2d199 !important;
+  background: #f7edcf !important;
+  color: #66552f !important;
+}
+.cosmetic-button:hover:not(:disabled) { background: #efe2b8 !important; }
+.cosmetic-card.equipped .cosmetic-button,
+.profile-frame-option.selected {
+  border-color: #a9c9af !important;
+  background: #e2efe4 !important;
+  color: #45634d !important;
+}
+.profile-avatar {
+  border-color: #b9a6ca !important;
+  background: #eee8f4 !important;
+  background-image: none !important;
+  box-shadow: 0 0 0 4px #e8dff0 !important;
+}
+.profile-edit-form textarea,
+.profile-edit-form input[type="file"],
+.profile-form input,
+.social-search-row input {
+  border-color: #ddd2e2 !important;
+  background: #fffdf8 !important;
+  color: #514456 !important;
+}
+.profile-edit-form textarea::placeholder,
+.profile-form input::placeholder,
+.social-search-row input::placeholder { color: #8a7e8c !important; }
+.profile-edit-form input[type="file"]::file-selector-button {
+  background: #eee8f4 !important;
+  color: #514456 !important;
+}
+.profile-frame-option.selected { border-color: #a9c9af !important; }
+.achievement-card { background: #f4efe8 !important; }
+.achievement-card.unlocked { opacity: 1; }
+.achievement-status { color: #52775b !important; }
+.achievement-progress > small { color: #786c7b !important; }
+
+/* Los temas del tablero pasan a variantes pastel, sin paneles translúcidos. */
+#game-screen[data-skin="clasico"] { --skin-accent: #bd9d6b; --skin-deep: #f4ead7; }
+#game-screen[data-skin="huerto"] { --skin-accent: #79a887; --skin-deep: #e2efe4; }
+#game-screen[data-skin="fresa"] { --skin-accent: #c77b91; --skin-deep: #f5e1e5; }
+#game-screen[data-skin="noche"] { --skin-accent: #927cb2; --skin-deep: #eee8f4; }
+#game-screen[data-skin="dorado"] { --skin-accent: #b08b45; --skin-deep: #f7edcf; }
+#game-screen[data-skin="marino"] { --skin-accent: #6598a1; --skin-deep: #e0eff0; }
+#game-screen[data-skin="lavanda"] { --skin-accent: #997eb5; --skin-deep: #eee8f4; }
+#game-screen[data-skin="citrico"] { --skin-accent: #ad8b47; --skin-deep: #f7edcf; }
+#game-screen[data-skin="atardecer"] { --skin-accent: #bd7967; --skin-deep: #f7e7df; }
+#game-screen[data-skin="caramelo"] { --skin-accent: #a77c5c; --skin-deep: #f1e4d9; }
+#game-screen[data-skin="esmeralda"] { --skin-accent: #628f78; --skin-deep: #e2efe4; }
+#game-screen[data-skin="caramelos"] { --skin-accent: #bb718f; --skin-deep: #f5e1e9; }
+#game-screen[data-skin="galaxia"] { --skin-accent: #8978a8; --skin-deep: #ebe7f3; }
+#game-screen[data-skin] .board-card,
+#game-screen[data-skin] .level-card {
+  border-color: var(--skin-accent) !important;
+  background: var(--skin-deep) !important;
+  background-image: none !important;
+}
+#game-screen[data-skin] .board-cell:not(.empty):not(.selected):not(.hinted) {
+  border-color: var(--skin-accent) !important;
+  background: var(--skin-deep) !important;
+  background-image: none !important;
+}
+#game-screen[data-skin] .board-cell.empty {
+  border-color: var(--skin-accent) !important;
+  background: #fffdf8 !important;
+}
+#game-screen[data-skin] .board-cell.selected { background: #f5dfe3 !important; }
+#game-screen[data-skin] .board-cell.hinted { background: #f7edcf !important; }
+
+/* Paneles sociales y clasificación con contraste constante. */
+.social-search-row input { border-radius: 13px; }
+.social-achievement-badge {
+  border-color: #e5cf91 !important;
+  background: #f7edcf !important;
+  color: #66552f !important;
+}
+.social-player-identity strong { color: #77618d !important; }
+.social-player-coins { color: #896b32 !important; }
+.ranking-tab.selected {
+  border-color: #a9c9af !important;
+  background: #e2efe4 !important;
+  color: #45634d !important;
+}
+.google-login-button > span {
+  border: 1px solid #e2d9ce;
+  background: #fffdf8 !important;
+  color: #4285f4 !important;
+}
+.social-player-actions .cosmetic-button,
+.social-player-actions .quiet-button { background: #f0eaf5 !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .board-cell.hinted { animation: none; }
+}
