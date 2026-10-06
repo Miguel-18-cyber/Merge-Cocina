@@ -12,6 +12,7 @@ Un juego casual de cocina para combinar ingredientes, completar pedidos y pasar 
 - Las pistas son gratis: resaltan una combinación útil o recomiendan el ingrediente que ayuda a preparar los pedidos pendientes.
 - Generar ingredientes ya no usa una segunda barra de energía. El tipo de ingrediente generado se orienta a los pedidos que faltan.
 - La pantalla principal muestra el avance del nivel; los logros incluyen una barra de progreso.
+- Las fusiones dan 10 puntos por nivel del producto; cada pedido da 25 puntos por nivel y pieza, y terminar el nivel añade 50 por estrella. El récord personal se conserva en el dispositivo o en el guardado privado y no aparece en clasificaciones públicas.
 - La campaña tiene 16 niveles con pedidos variados; generar un ingrediente descuenta medio movimiento y el nivel calcula el margen a partir de las recetas.
 - Los efectos de fusión, ingredientes, entregas y victoria se pueden activar o silenciar desde el menú; la preferencia se conserva en el dispositivo.
 - La tienda ofrece 13 estilos de tablero, 11 marcos y 12 iconos de perfil. Los artículos desbloqueados y equipados se guardan aparte y sobreviven al reinicio de la partida.
