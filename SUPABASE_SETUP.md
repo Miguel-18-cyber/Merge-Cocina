@@ -1,6 +1,6 @@
 # Configurar cuentas en línea de Merge Cocina
 
-La PWA usa Supabase Auth para la sesión de Google y PostgreSQL para sincronizar el progreso, buscar apodos, gestionar amistades y consultar las clasificaciones. El correo de Google nunca forma parte del perfil público.
+La PWA usa Supabase Auth para la sesión de Google y PostgreSQL para sincronizar el guardado privado, buscar apodos y gestionar amistades. El correo de Google nunca forma parte del perfil público. La publicación de estadísticas y las clasificaciones quedan protegidas hasta que un servidor valide el progreso.
 
 ## 1. Crear un proyecto de Supabase
 
@@ -10,7 +10,7 @@ En SQL Editor, abre y ejecuta el archivo:
 
 supabase/migrations/20261004000000_online_accounts.sql
 
-La migración crea perfiles con únicamente apodo y estadísticas públicas; una tabla de guardado privado protegida por RLS; solicitudes de amistad; y funciones limitadas para buscar jugadores, consultar clasificaciones y guardar actividad. El progreso privado solo lo puede leer la cuenta propietaria.
+La primera migración crea las tablas y funciones base. Para el paso 2 de seguridad, el proyecto incluye además `supabase/migrations/20261005000000_secure_public_progress.sql`; cuando se active la configuración inicial de Supabase, ejecútala después de la migración base. Esta segunda migración limita el perfil público al apodo y al estado de validación, mueve la lectura del perfil propio a una función autenticada y hace que la PWA solo envíe el guardado privado. El guardado privado solo lo puede leer la cuenta propietaria.
 
 ## 2. Configurar «Continuar con Google»
 
@@ -40,7 +40,8 @@ La publishable key es visible en el navegador y está diseñada para usarse en e
 - El apodo se busca desde Amigos. Para reducir resultados accidentales, la búsqueda empieza al escribir 3 caracteres.
 - Una solicitud recibida se puede aceptar o rechazar; las amistades se pueden quitar.
 - El perfil público muestra apodo, nivel, pedidos completados del nivel actual, logros destacados y saldo de monedas. No muestra correo, edad, descripción ni foto.
-- En la clasificación semanal, cada pedido entregado suma un punto. En Histórico, el orden usa nivel, pedidos del nivel y monedas.
-- Si se juega sin conexión, la partida local sigue funcionando y guarda los pedidos pendientes; al recuperar Internet, los manda a la cuenta. Los pedidos fuera de línea se registran en la semana en que se sincronizan.
+- Las búsquedas pueden mostrar apodos; el nivel, monedas, pedidos y logros aparecen solo cuando el servidor los haya validado.
+- Las clasificaciones semanal e histórica incluyen únicamente partidas verificadas. La PWA actual todavía no envía resultados a validación, así que ambas clasificaciones permanecen vacías y no deben usarse para competencias o premios.
+- Si se juega sin conexión, la partida local sigue funcionando y sincroniza el guardado privado al recuperar Internet. La actividad local no se suma a la clasificación semanal.
 
-La clasificación es social y sirve para comparar el avance. El cliente del juego participa en el envío de las estadísticas, así que esta primera versión no debe usarse para premios ni competencias con dinero.
+`record_verified_order` queda reservado para un backend de confianza: requiere `service_role`, valida la estructura de las estadísticas y deduplica pedidos por UUID. La PWA no tiene acceso a esa clave ni a esa función. Falta crear e integrar el servidor que reproduzca las reglas de juego y publique recompensas verificadas; hasta entonces, las clasificaciones no participan en premios.
