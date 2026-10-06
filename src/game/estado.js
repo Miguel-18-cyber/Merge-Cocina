@@ -1,6 +1,6 @@
 import { CASILLAS, crearPieza } from './modelos.js';
 import { combinar as combinarPiezas, entregarPedido, generar, crearTablero, puedeCompletarPedido, calcularMovimientosMinimos } from './logica.js';
-import { obtenerNivel } from '../data/niveles.js';
+import { NIVELES, obtenerNivel } from '../data/niveles.js';
 
 const COSTE_PAQUETE_MOVIMIENTOS = 300;
 
@@ -100,13 +100,13 @@ export class ControladorJuego {
   }
 
   avanzarNivel() {
-    if (!this.recompensado || this.nivel.id >= 8) return false;
+    if (!this.recompensado || this.nivel.id >= NIVELES.length) return false;
     this.iniciarNivel(this.nivel.id + 1);
     return true;
   }
 
   empezarOtraVuelta() {
-    if (!this.recompensado || this.nivel.id < 8) return false;
+    if (!this.recompensado || this.nivel.id < NIVELES.length) return false;
     this.iniciarNivel(1);
     return true;
   }
