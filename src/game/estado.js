@@ -121,10 +121,12 @@ export class ControladorJuego {
     return true;
   }
 
-  reiniciarPartida() {
+  reiniciarPartida({ conservarRecord = true } = {}) {
+    const record = conservarRecord ? this.mejorPuntuacion : 0;
     this.monedas = 0;
     this.estrellas = 0;
     this.puntuacion = 0;
+    this.mejorPuntuacion = record;
     this.iniciarNivel(1);
   }
 
