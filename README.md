@@ -12,6 +12,8 @@ Un juego casual de cocina para combinar ingredientes, completar pedidos y pasar 
 - Las pistas son gratis: resaltan una combinación útil o recomiendan el ingrediente que ayuda a preparar los pedidos pendientes.
 - Generar ingredientes ya no usa una segunda barra de energía. El tipo de ingrediente generado se orienta a los pedidos que faltan.
 - La pantalla principal muestra el avance del nivel; los logros incluyen una barra de progreso.
+- La campaña tiene 16 niveles con pedidos variados; generar un ingrediente descuenta medio movimiento y el nivel calcula el margen a partir de las recetas.
+- Los efectos de fusión, ingredientes, entregas y victoria se pueden activar o silenciar desde el menú; la preferencia se conserva en el dispositivo.
 - La tienda ofrece 13 estilos de tablero, 11 marcos y 12 iconos de perfil. Los artículos desbloqueados y equipados se guardan aparte y sobreviven al reinicio de la partida.
 - Completar el nivel 1 entrega 500 monedas; la recompensa aumenta 500 por nivel y suma 150 monedas adicionales después de cada bloque de cinco niveles. Completar una receta no gasta movimientos y conserva la recompensa hasta terminar todos los pedidos.
 - Cinco movimientos extra cuestan 300 monedas. Los marcos y estilos comprables cuestan más de 500.000 monedas; al terminar el nivel 16 se puede comenzar otra vuelta y conservar el saldo.
