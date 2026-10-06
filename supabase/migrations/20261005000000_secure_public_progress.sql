@@ -265,7 +265,7 @@ begin
   if exists (
     select 1
     from unnest(coalesce(p_important_achievements, '{}'::text[])) as items(achievement_id)
-    where achievement_id is null or achievement_id not in ('primer-pedido', 'ruta-de-sabores', 'gran-banquete', 'tesoro-de-cocina')
+    where achievement_id is null or achievement_id not in ('primer-pedido', 'ruta-de-sabores', 'gran-banquete', 'cocina-legendaria', 'tesoro-de-cocina')
   ) then
     raise exception 'Invalid public achievement' using errcode = '22023';
   end if;
