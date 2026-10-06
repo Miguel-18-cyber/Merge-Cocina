@@ -14,7 +14,7 @@ Un juego casual de cocina para combinar ingredientes, completar pedidos y pasar 
 - La pantalla principal muestra el avance del nivel; los logros incluyen una barra de progreso.
 - La tienda ofrece 13 estilos de tablero, 11 marcos y 12 iconos de perfil. Los artículos desbloqueados y equipados se guardan aparte y sobreviven al reinicio de la partida.
 - Completar el nivel 1 entrega 500 monedas; la recompensa aumenta 500 por nivel y suma 150 monedas adicionales después de cada bloque de cinco niveles. Completar una receta no gasta movimientos y conserva la recompensa hasta terminar todos los pedidos.
-- Cinco movimientos extra cuestan 300 monedas. Los marcos y estilos comprables cuestan más de 500.000 monedas; al terminar el nivel 8 se puede comenzar otra vuelta y conservar el saldo.
+- Cinco movimientos extra cuestan 300 monedas. Los marcos y estilos comprables cuestan más de 500.000 monedas; al terminar el nivel 16 se puede comenzar otra vuelta y conservar el saldo.
 - Los saldos de las versiones anteriores se ajustan automáticamente a esta escala de monedas.
 - El perfil permite consultar nombre y edad, escribir una descripción, guardar una foto comprimida y equipar los marcos desbloqueados con monedas.
 - El proyecto incluye configuración de Vite PWA y puede publicarse como sitio estático en Vercel con `pnpm run build` y salida `dist/`.
