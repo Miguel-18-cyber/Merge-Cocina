@@ -39,7 +39,8 @@ export function contarPiezas(tablero, familia, nivel) {
 
 export function calcularMovimientosMinimos(tablero, pedidos) {
   validarTablero(tablero);
-  let movimientos = 0;
+  let movimientosDeFusion = 0;
+  let ingredientesBaseFaltantes = 0;
   for (const familia of ['pan', 'fruta']) {
     const pedidosPorNivel = Array(6).fill(0);
     const piezasPorNivel = Array(6).fill(0);
@@ -55,10 +56,11 @@ export function calcularMovimientosMinimos(tablero, pedidos) {
     for (let nivel = 5; nivel >= 1; nivel -= 1) {
       const piezasNecesarias = pedidosPorNivel[nivel] + faltanPiezasSiguienteNivel * 2;
       faltanPiezasSiguienteNivel = Math.max(0, piezasNecesarias - piezasPorNivel[nivel]);
-      movimientos += faltanPiezasSiguienteNivel;
+      if (nivel === 1) ingredientesBaseFaltantes += faltanPiezasSiguienteNivel;
+      else movimientosDeFusion += faltanPiezasSiguienteNivel;
     }
   }
-  return movimientos;
+  return movimientosDeFusion + (ingredientesBaseFaltantes * 0.5);
 }
 
 export function puedeCompletarPedido(tablero, pedido) {
