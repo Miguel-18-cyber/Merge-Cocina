@@ -50,6 +50,7 @@
             <div class="hub-stat glass-card"><span>🪙</span><div><small>MONEDAS</small><strong id="hub-coins">0</strong></div></div>
             <div class="hub-stat glass-card"><span>🌟</span><div><small>ESTRELLAS</small><strong id="hub-stars">0</strong></div></div>
             <div class="hub-stat glass-card"><span>🏆</span><div><small>LOGROS</small><strong><span id="hub-achievements">0</span> / <span id="achievements-total">3</span></strong></div></div>
+            <div class="hub-stat glass-card"><span>🏅</span><div><small>PUNTOS</small><strong id="hub-score">0</strong><small>Récord <span id="hub-best-score">0</span></small></div></div>
           </div>
           <div class="hub-menu">
             <button id="play-button" class="hub-action play-action" type="button"><span class="hub-action-icon">🧩</span><span><strong id="play-title">Continuar partida</strong><small id="play-copy">Combina ingredientes y completa pedidos</small></span><span class="action-arrow">→</span></button>
@@ -169,6 +170,7 @@
             <div id="orders-list" class="orders-list"></div>
           </section>
           <section class="glass-card board-card" aria-label="Tablero de cocina">
+            <div class="score-strip" aria-label="Puntuación de la partida"><span>🏅 Puntos</span><strong id="score-count">0</strong><span>Récord personal</span><strong id="best-score-count">0</strong></div>
             <div id="board" class="board" aria-label="Tablero de cocina con 5 columnas y 6 filas"></div>
             <div class="moves-meter-wrap"><div><span>Movimientos de este intento</span><strong id="moves-meter-label">7 disponibles</strong></div><span id="moves-meter" class="moves-meter" role="progressbar" aria-label="Movimientos disponibles" aria-valuemin="0" aria-valuemax="7" aria-valuenow="7"><span id="moves-progress"></span></span></div>
             <div class="board-actions">
