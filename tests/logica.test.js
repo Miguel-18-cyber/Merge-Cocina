@@ -55,13 +55,15 @@ test('calcula acciones de receta con combinaciones, ingredientes faltantes y mar
   const pedidos = [{ familia: 'pan', nivel: 2, cantidad: 1 }, { familia: 'fruta', nivel: 2, cantidad: 1 }];
   assert.equal(calcularMovimientosMinimos(inicio, pedidos), 2);
   const faltantes = crearTablero([crearPieza('pan', 1), crearPieza('pan', 2)]);
-  assert.equal(calcularMovimientosMinimos(faltantes, [{ familia: 'pan', nivel: 3, cantidad: 1 }]), 3);
+  assert.equal(calcularMovimientosMinimos(faltantes, [{ familia: 'pan', nivel: 3, cantidad: 1 }]), 2.5);
 });
 
-test('define ocho niveles y un reto final con piezas de nivel cinco', () => {
-  assert.equal(NIVELES.length, 8);
+test('define dieciséis niveles y un reto final con pedidos de nivel cinco', () => {
+  assert.equal(NIVELES.length, 16);
   assert.equal(obtenerNivel(8).pedidos.filter((item) => item.nivel === 5).length, 2);
   assert.equal(obtenerNivel(8).pedidos.length, 4);
+  assert.equal(obtenerNivel(16).pedidos.filter((item) => item.nivel === 5).length, 2);
+  assert.equal(obtenerNivel(16).pedidos.length, 6);
   assert.equal(obtenerNivel(99), null);
 });
 
