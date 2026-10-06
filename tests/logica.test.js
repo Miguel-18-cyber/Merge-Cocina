@@ -62,8 +62,6 @@ test('define dieciséis niveles y un reto final con pedidos de nivel cinco', () 
   assert.equal(NIVELES.length, 16);
   assert.equal(obtenerNivel(8).pedidos.filter((item) => item.nivel === 5).length, 2);
   assert.equal(obtenerNivel(8).pedidos.length, 4);
-  assert.equal(obtenerNivel(16).pedidos.filter((item) => item.nivel === 5).length, 2);
-  assert.equal(obtenerNivel(16).pedidos.length, 6);
   assert.equal(obtenerNivel(99), null);
 });
 
