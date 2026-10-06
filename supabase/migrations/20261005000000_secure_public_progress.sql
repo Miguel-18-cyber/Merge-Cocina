@@ -29,7 +29,7 @@ begin
     raise exception 'Sign in is required' using errcode = '42501';
   end if;
   if p_save_data is null or jsonb_typeof(p_save_data) <> 'object'
-     or octet_length(p_save_data::text) > 1000000 then
+     or octet_length(p_save_data::text) > 1500000 then
     raise exception 'Invalid or oversized private game save' using errcode = '22023';
   end if;
 
@@ -85,7 +85,8 @@ as $$
   where p.user_id = auth.uid();
 $$;
 
-create or replace function public.search_players(p_query text)
+drop function if exists public.search_players(text);
+create function public.search_players(p_query text)
 returns table (
   player_id uuid,
   nickname text,
@@ -95,7 +96,8 @@ returns table (
   important_achievements text[],
   coins bigint,
   friendship_id uuid,
-  friendship_status text
+  friendship_status text,
+  progress_verified boolean
 )
 language plpgsql
 stable
@@ -114,12 +116,12 @@ begin
 
   return query
     select p.user_id, p.nickname,
-      case when p.progress_verified then p.current_level::integer else 1 end,
-      case when p.progress_verified then p.orders_completed::integer else 0 end,
-      case when p.progress_verified then p.orders_total::integer else 0 end,
-      case when p.progress_verified then p.important_achievements else '{}'::text[] end,
-      case when p.progress_verified then p.coins else 0::bigint end,
-      f.id, f.status
+      case when p.progress_verified then p.current_level::integer else null end,
+      case when p.progress_verified then p.orders_completed::integer else null end,
+      case when p.progress_verified then p.orders_total::integer else null end,
+      case when p.progress_verified then p.important_achievements else null end,
+      case when p.progress_verified then p.coins else null::bigint end,
+      f.id, f.status, p.progress_verified
     from public.player_profiles as p
     left join lateral (
       select relation.id, relation.status
@@ -135,32 +137,8 @@ begin
 end;
 $$;
 
-create or replace function public.get_leaderboard()
-returns table (
-  player_id uuid,
-  nickname text,
-  current_level integer,
-  orders_completed integer,
-  orders_total integer,
-  important_achievements text[],
-  coins bigint
-)
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select p.user_id, p.nickname, p.current_level::integer,
-    p.orders_completed::integer, p.orders_total::integer,
-    p.important_achievements, p.coins
-  from public.player_profiles as p
-  where auth.uid() is not null
-    and p.progress_verified
-  order by p.current_level desc, p.orders_completed desc, p.coins desc
-  limit 50;
-$$;
-
-create or replace function public.get_weekly_leaderboard()
+drop function if exists public.get_leaderboard();
+create function public.get_leaderboard()
 returns table (
   player_id uuid,
   nickname text,
@@ -169,7 +147,35 @@ returns table (
   orders_total integer,
   important_achievements text[],
   coins bigint,
-  weekly_orders integer
+  progress_verified boolean
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $
+  select p.user_id, p.nickname, p.current_level::integer,
+    p.orders_completed::integer, p.orders_total::integer,
+    p.important_achievements, p.coins, p.progress_verified
+  from public.player_profiles as p
+  where auth.uid() is not null
+    and p.progress_verified
+  order by p.current_level desc, p.orders_completed desc, p.coins desc
+  limit 50;
+$$;
+
+drop function if exists public.get_weekly_leaderboard();
+create function public.get_weekly_leaderboard()
+returns table (
+  player_id uuid,
+  nickname text,
+  current_level integer,
+  orders_completed integer,
+  orders_total integer,
+  important_achievements text[],
+  coins bigint,
+  weekly_orders integer,
+  progress_verified boolean
 )
 language sql
 stable
@@ -178,7 +184,7 @@ set search_path = ''
 as $$
   select p.user_id, p.nickname, p.current_level::integer,
     p.orders_completed::integer, p.orders_total::integer,
-    p.important_achievements, p.coins, coalesce(w.delivered_orders, 0)::integer
+    p.important_achievements, p.coins, coalesce(w.delivered_orders, 0)::integer, p.progress_verified
   from public.player_profiles as p
   left join public.player_weekly_scores as w
     on w.user_id = p.user_id and w.week_start = date_trunc('week', now())::date
@@ -189,7 +195,8 @@ as $$
   limit 50;
 $$;
 
-create or replace function public.get_my_friendships()
+drop function if exists public.get_my_friendships();
+create function public.get_my_friendships()
 returns table (
   friendship_id uuid,
   requester_id uuid,
@@ -202,20 +209,22 @@ returns table (
   orders_completed integer,
   orders_total integer,
   important_achievements text[],
-  coins bigint
+  coins bigint,
+  progress_verified boolean
 )
 language sql
 stable
 security definer
 set search_path = ''
-as $$
+as $
   select f.id, f.requester_id, f.recipient_id, f.status, f.created_at,
     p.user_id, p.nickname,
-    case when p.progress_verified then p.current_level::integer else 1 end,
-    case when p.progress_verified then p.orders_completed::integer else 0 end,
-    case when p.progress_verified then p.orders_total::integer else 0 end,
-    case when p.progress_verified then p.important_achievements else '{}'::text[] end,
-    case when p.progress_verified then p.coins else 0::bigint end
+    case when p.progress_verified then p.current_level::integer else null end,
+    case when p.progress_verified then p.orders_completed::integer else null end,
+    case when p.progress_verified then p.orders_total::integer else null end,
+    case when p.progress_verified then p.important_achievements else null end,
+    case when p.progress_verified then p.coins else null::bigint end,
+    p.progress_verified
   from public.player_friendships as f
   join public.player_profiles as p
     on p.user_id = case when f.requester_id = auth.uid() then f.recipient_id else f.requester_id end
@@ -255,8 +264,8 @@ begin
   end if;
   if exists (
     select 1
-    from unnest(coalesce(p_important_achievements, '{}'::text[])) as item
-    where item not in ('primer-pedido', 'ruta-de-sabores', 'gran-banquete', 'tesoro-de-cocina')
+    from unnest(coalesce(p_important_achievements, '{}'::text[])) as items(achievement_id)
+    where achievement_id is null or achievement_id not in ('primer-pedido', 'ruta-de-sabores', 'gran-banquete', 'tesoro-de-cocina')
   ) then
     raise exception 'Invalid public achievement' using errcode = '22023';
   end if;
