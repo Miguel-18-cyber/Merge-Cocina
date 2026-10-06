@@ -21,7 +21,7 @@ import {
   cerrarSesionOnline,
   cargarCuentaOnline,
   crearPerfilOnline,
-  guardarEstadoOnline,
+  guardarPartidaPrivadaOnline,
   buscarJugadores,
   cargarClasificacion,
   cargarClasificacionSemanal,
@@ -59,7 +59,6 @@ let sincronizandoDesdeNube = false;
 const CLAVE_DUENO_NUBE = 'merge-cocina-cuenta-online-v1';
 const CLAVE_NUBE_SUCIO = 'merge-cocina-cuenta-online-dirty-v1';
 const LOGROS_PUBLICOS = new Set(['primer-pedido', 'ruta-de-sabores', 'gran-banquete', 'tesoro-de-cocina']);
-let eventosPedidoPendientes = restaurarEventosPedido();
 let clasificacionSemanalActual = [];
 let clasificacionHistoricaActual = [];
 let periodoClasificacion = 'weekly';
@@ -861,7 +860,6 @@ function generarPieza() {
 function entregarPedido(pedidoId) {
   const resultado = juego.entregar(pedidoId);
   if (!resultado.ok) return;
-  registrarEventoPedido();
   seleccionada = null;
   pistaIndices = [];
   messageElement.textContent = resultado.derrota
@@ -944,36 +942,6 @@ function mostrarAccesoOnline() {
   document.querySelector('#local-profile-button').hidden = true;
   profileForm.hidden = true;
   actualizarEstadoCuenta('Entra con Google para recuperar tu cocina y jugar con amigos.');
-}
-
-function restaurarEventosPedido() {
-  try {
-    const lista = JSON.parse(localStorage.getItem(CLAVE_EVENTOS_PEDIDO));
-    return Array.isArray(lista)
-      ? lista.filter((evento) => evento && typeof evento.id === 'string' && /^[0-9a-f-]{36}$/i.test(evento.id)).slice(-5000)
-      : [];
-  } catch {
-    return [];
-  }
-}
-
-function crearIdEvento() {
-  if (crypto.randomUUID) return crypto.randomUUID();
-  const bytes = crypto.getRandomValues(new Uint8Array(16));
-  bytes[6] = (bytes[6] & 0x0f) | 0x40;
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
-  const hexadecimal = [...bytes].map((valor) => valor.toString(16).padStart(2, '0')).join('');
-  return hexadecimal.slice(0, 8) + '-' + hexadecimal.slice(8, 12) + '-' + hexadecimal.slice(12, 16)
-    + '-' + hexadecimal.slice(16, 20) + '-' + hexadecimal.slice(20);
-}
-
-function registrarEventoPedido() {
-  if (!sesionOnline?.user?.id) return;
-  eventosPedidoPendientes.push({ id: crearIdEvento() });
-  eventosPedidoPendientes = eventosPedidoPendientes.slice(-5000);
-  try { localStorage.setItem(CLAVE_EVENTOS_PEDIDO, JSON.stringify(eventosPedidoPendientes)); }
-  catch (error) { console.warn('No se pudo guardar la actividad pendiente.', error); }
-  programarGuardadoNube();
 }
 
 function elegirPeriodoClasificacion(periodo) {
@@ -1139,24 +1107,10 @@ async function sincronizarNubeAhora() {
   try {
     while (versionGuardadaNube < versionNube) {
       const versionActual = versionNube;
-      const pedidosCompletados = juego.nivel.pedidos.length - juego.pedidosRestantes.size;
-      const logrosImportantes = [...logrosDesbloqueados].filter((id) => LOGROS_PUBLICOS.has(id));
-      const eventosEnviados = [...eventosPedidoPendientes];
-      await guardarEstadoOnline({
-        nivel: juego.nivel.id,
-        pedidosCompletados,
-        pedidosTotales: juego.nivel.pedidos.length,
-        logrosImportantes,
-        monedas: juego.monedas,
-        datosPrivados: serializarDatosPrivados(),
-        eventosPedido: eventosEnviados,
-      });
-      const idsEnviados = new Set(eventosEnviados.map((evento) => evento.id));
-      eventosPedidoPendientes = eventosPedidoPendientes.filter((evento) => !idsEnviados.has(evento.id));
-      localStorage.setItem(CLAVE_EVENTOS_PEDIDO, JSON.stringify(eventosPedidoPendientes));
+      await guardarPartidaPrivadaOnline(serializarDatosPrivados());
       versionGuardadaNube = versionActual;
       if (versionActual === versionNube) localStorage.removeItem(CLAVE_NUBE_SUCIO);
-      actualizarEstadoCuenta('Partida sincronizada. Puedes continuar en otro dispositivo con esta cuenta.');
+      actualizarEstadoCuenta('Guardado privado sincronizado. Las estadísticas públicas esperan validación del servidor.');
     }
   } catch (error) {
     console.warn('La partida sigue guardada localmente; la sincronización se volverá a intentar.', error);
@@ -1174,14 +1128,17 @@ function crearTarjetaJugador(jugador, { tipo = 'leaderboard', relacion = null } 
   identidad.className = 'social-player-identity';
   const apodo = document.createElement('h4');
   apodo.textContent = jugador.nickname || 'Chef';
+  const progresoVerificado = jugador.progress_verified === true;
   const nivel = document.createElement('strong');
-  nivel.textContent = 'Nivel ' + Number(jugador.current_level || 1);
+  nivel.textContent = progresoVerificado ? 'Nivel ' + Number(jugador.current_level || 1) : 'Avance pendiente de validación';
   identidad.append(apodo, nivel);
 
   const avance = document.createElement('p');
   avance.className = 'social-player-progress';
-  avance.textContent = (Number(jugador.orders_completed) || 0) + ' / ' + (Number(jugador.orders_total) || 0) + ' pedidos de este nivel';
-  if (Number.isFinite(Number(jugador.weekly_orders))) {
+  avance.textContent = progresoVerificado
+    ? (Number(jugador.orders_completed) || 0) + ' / ' + (Number(jugador.orders_total) || 0) + ' pedidos de este nivel'
+    : 'El servidor aún no ha validado las estadísticas de esta cuenta.';
+  if (progresoVerificado && Number.isFinite(Number(jugador.weekly_orders))) {
     avance.textContent += ' · ' + Number(jugador.weekly_orders) + ' esta semana';
   }
   const monedas = document.createElement('p');
@@ -1189,7 +1146,8 @@ function crearTarjetaJugador(jugador, { tipo = 'leaderboard', relacion = null } 
   monedas.textContent = '🪙 ' + formatoMonedas.format(Number(jugador.coins) || 0);
   const detalles = document.createElement('div');
   detalles.className = 'social-player-details';
-  detalles.append(avance, monedas);
+  detalles.append(avance);
+  if (progresoVerificado) detalles.append(monedas);
 
   const insignias = document.createElement('div');
   insignias.className = 'social-player-achievements';
@@ -1207,7 +1165,7 @@ function crearTarjetaJugador(jugador, { tipo = 'leaderboard', relacion = null } 
   if (!insignias.childElementCount) {
     const ninguno = document.createElement('span');
     ninguno.className = 'form-note';
-    ninguno.textContent = 'Sin logros destacados todavía';
+    ninguno.textContent = progresoVerificado ? 'Sin logros destacados todavía' : 'Logros pendientes de validación';
     insignias.append(ninguno);
   }
 
@@ -1354,6 +1312,7 @@ async function cargarPanelSocial() {
       orders_total: item.orders_total,
       important_achievements: item.important_achievements,
       coins: item.coins,
+      progress_verified: item.progress_verified,
       friendship_id: item.friendship_id,
       relacion: item,
     })), 'incoming');
@@ -1367,6 +1326,7 @@ async function cargarPanelSocial() {
       orders_total: item.orders_total,
       important_achievements: item.important_achievements,
       coins: item.coins,
+      progress_verified: item.progress_verified,
     }, { tipo: 'friend', relacion: item })));
     renderListaJugadores(outgoingList, salientes.map((item) => ({
       player_id: item.other_user_id,
@@ -1376,9 +1336,10 @@ async function cargarPanelSocial() {
       orders_total: item.orders_total,
       important_achievements: item.important_achievements,
       coins: item.coins,
+      progress_verified: item.progress_verified,
     })), 'leaderboard');
     renderClasificacionActual();
-    feedback.textContent = 'Clasificación actualizada. Se muestran solo apodo y estadísticas del juego.';
+    feedback.textContent = 'Amigos actualizados. La clasificación se activará cuando el servidor valide las partidas.';
   } catch (error) {
     console.error('No se pudo cargar el panel social.', error);
     feedback.textContent = error.message || 'No se pudo cargar la clasificación. Inténtalo de nuevo.';
@@ -1492,7 +1453,7 @@ profileForm.addEventListener('submit', async (event) => {
     if (NUBE_CONFIGURADA && sesionOnline) {
       localStorage.setItem(CLAVE_DUENO_NUBE, sesionOnline.user.id);
       await sincronizarNubeAhora();
-      feedback.textContent = 'Cuenta lista. Tu progreso se sincronizará en este dispositivo.';
+      feedback.textContent = 'Cuenta lista. El guardado privado se sincroniza; la clasificación espera validación del servidor.';
     }
     mostrarCentro();
   } catch (error) {
