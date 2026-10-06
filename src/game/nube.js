@@ -180,13 +180,13 @@ export async function cerrarSesionOnline() {
   localStorage.removeItem(CLAVE_VERIFICADOR);
 }
 
-export async function cargarCuentaOnline(userId) {
-  const filtro = encodeURIComponent('eq.' + userId);
+export async function cargarCuentaOnline() {
   const [perfiles, guardados] = await Promise.all([
-    pedirDatos('player_profiles?select=user_id,nickname,current_level,orders_completed,orders_total,important_achievements,coins&user_id=' + filtro + '&limit=1'),
-    pedirDatos('player_game_saves?select=save_data&user_id=' + filtro + '&limit=1'),
+    pedirDatos('rpc/get_my_player_profile', { method: 'POST', body: {} }),
+    pedirDatos('player_game_saves?select=save_data&limit=1'),
   ]);
-  return { perfil: perfiles?.[0] ?? null, guardado: guardados?.[0]?.save_data ?? null };
+  const perfil = Array.isArray(perfiles) ? perfiles[0] ?? null : null;
+  return { perfil, guardado: guardados?.[0]?.save_data ?? null };
 }
 
 export async function crearPerfilOnline(apodo) {
@@ -197,18 +197,10 @@ export async function crearPerfilOnline(apodo) {
   return filas;
 }
 
-export async function guardarEstadoOnline({ nivel, pedidosCompletados, pedidosTotales, logrosImportantes, monedas, datosPrivados, eventosPedido = [] }) {
-  return pedirDatos('rpc/save_player_state', {
+export async function guardarPartidaPrivadaOnline(datosPrivados) {
+  return pedirDatos('rpc/save_private_game_state', {
     method: 'POST',
-    body: {
-      p_save_data: datosPrivados,
-      p_current_level: nivel,
-      p_orders_completed: pedidosCompletados,
-      p_orders_total: pedidosTotales,
-      p_important_achievements: logrosImportantes,
-      p_coins: monedas,
-      p_order_events: eventosPedido,
-    },
+    body: { p_save_data: datosPrivados },
     prefer: 'return=minimal',
   });
 }
