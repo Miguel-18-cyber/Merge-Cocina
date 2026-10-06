@@ -23,7 +23,7 @@ Un juego casual de cocina para combinar ingredientes, completar pedidos y pasar 
 
 ## Cuenta, progreso sincronizado y amigos
 
-El proyecto incluye inicio de sesión con Google mediante Supabase, perfil público por apodo, guardado privado entre dispositivos, solicitudes de amistad, una clasificación semanal y otra histórica. Solo se publican el apodo, el nivel, el avance de pedidos, cuatro logros destacados y las monedas. Correo y edad nunca se incluyen en las consultas públicas. La clasificación semanal suma pedidos entregados y el histórico ordena por nivel, avance y monedas.
+El proyecto incluye la preparación de inicio de sesión con Google mediante Supabase, guardado privado entre dispositivos y solicitudes de amistad. La migración de seguridad deja las clasificaciones cerradas a las estadísticas enviadas por el navegador: nivel, monedas, pedidos y logros solo se harán públicos tras validación del servidor. Correo y edad nunca forman parte de las consultas públicas. Falta integrar el backend de validación antes de activar competencias o premios.
 
 Para activar el servicio, sigue los pasos de [SUPABASE_SETUP.md](SUPABASE_SETUP.md): ejecutar la migración SQL, configurar el proveedor Google en Supabase y agregar las dos variables públicas a Vercel. Sin esas variables, el modo local continúa disponible. No agregues claves secretas a variables VITE_.
 
