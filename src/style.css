@@ -1007,3 +1007,21 @@ button:focus-visible {
 }
 #game-screen .piece-level { color: #514456 !important; }
 #game-screen .board-cell:focus-visible { outline-color: #65527f !important; }
+
+.sound-toggle-button {
+  display: inline-grid;
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  place-items: center;
+  padding: 0 !important;
+  border-color: #d8c8e5 !important;
+  background: #eee8f4 !important;
+  color: #514456 !important;
+  font-size: 18px !important;
+}
+.sound-toggle-button[aria-pressed="false"] {
+  border-color: #e4d8c9 !important;
+  background: #fffdf8 !important;
+  color: #786c7b !important;
+}
