@@ -5,9 +5,11 @@ import { NIVELES, obtenerNivel } from '../data/niveles.js';
 const COSTE_PAQUETE_MOVIMIENTOS = 300;
 
 export class ControladorJuego {
-  constructor({ nivelId = 1, monedas = 0, estrellas = 0 } = {}) {
+  constructor({ nivelId = 1, monedas = 0, estrellas = 0, puntuacion = 0, mejorPuntuacion = puntuacion } = {}) {
     this.monedas = monedas;
     this.estrellas = estrellas;
+    this.puntuacion = numeroSeguro(puntuacion);
+    this.mejorPuntuacion = Math.max(this.puntuacion, numeroSeguro(mejorPuntuacion));
     this.derrotasEnNivel = 0;
     this.siguienteFamilia = 'pan';
     this.iniciarNivel(nivelId);
@@ -32,7 +34,9 @@ export class ControladorJuego {
       return { ...resultado, derrota: this.gastarMovimiento(1) };
     }
     this.tablero = resultado.tablero;
-    return { ...resultado, derrota: this.gastarMovimiento(1) };
+    const puntos = resultado.pieza.nivel * 10;
+    this.registrarPuntos(puntos);
+    return { ...resultado, puntos, derrota: this.gastarMovimiento(1) };
   }
 
   generar() {
@@ -89,14 +93,20 @@ export class ControladorJuego {
     if (!resultado.ok) return resultado;
     this.tablero = resultado.tablero;
     this.pedidosRestantes.delete(pedidoId);
+    const puntosPedido = pedido.nivel * 25 * pedido.cantidad;
+    let puntos = puntosPedido;
+    this.registrarPuntos(puntosPedido);
     let recompensa = null;
     if (this.pedidosRestantes.size === 0 && !this.recompensado) {
       this.recompensado = true;
       recompensa = this.nivel.recompensa;
       this.monedas += recompensa.monedas;
       this.estrellas += recompensa.estrellas;
+      const puntosNivel = recompensa.estrellas * 50;
+      puntos += puntosNivel;
+      this.registrarPuntos(puntosNivel);
     }
-    return { ok: true, recompensa, derrota: this.registrarDerrotaSiCorresponde() };
+    return { ok: true, recompensa, puntos, derrota: this.registrarDerrotaSiCorresponde() };
   }
 
   avanzarNivel() {
@@ -114,6 +124,7 @@ export class ControladorJuego {
   reiniciarPartida() {
     this.monedas = 0;
     this.estrellas = 0;
+    this.puntuacion = 0;
     this.iniciarNivel(1);
   }
 
@@ -123,6 +134,8 @@ export class ControladorJuego {
       nivelId: this.nivel.id,
       monedas: this.monedas,
       estrellas: this.estrellas,
+      puntuacion: this.puntuacion,
+      mejorPuntuacion: this.mejorPuntuacion,
       tablero: this.tablero,
       pedidosRestantes: [...this.pedidosRestantes],
       siguienteFamilia: this.siguienteFamilia,
@@ -144,6 +157,8 @@ export class ControladorJuego {
         ? Math.floor(monedasGuardadas / 1000)
         : monedasGuardadas;
     const estrellas = numeroSeguro(estado.estrellas);
+    const puntuacion = numeroSeguro(estado.puntuacion);
+    const mejorPuntuacion = Math.max(puntuacion, numeroSeguro(estado.mejorPuntuacion));
     this.iniciarNivel(estado.nivelId);
     this.tablero = estado.tablero.map((pieza) => {
       if (pieza === null) return null;
@@ -155,6 +170,8 @@ export class ControladorJuego {
     this.pedidosRestantes = new Set(estado.pedidosRestantes.filter((id) => pedidosValidos.has(id)));
     this.monedas = monedas;
     this.estrellas = estrellas;
+    this.puntuacion = puntuacion;
+    this.mejorPuntuacion = mejorPuntuacion;
     this.siguienteFamilia = estado.siguienteFamilia === 'fruta' ? 'fruta' : 'pan';
     this.recompensado = this.pedidosRestantes.size === 0;
     this.derrotasEnNivel = Math.min(1, numeroSeguro(estado.derrotasEnNivel));
@@ -163,6 +180,12 @@ export class ControladorJuego {
       this.movimientosMaximos = normalizarMovimientos(estado.movimientosMaximos);
       this.movimientosRestantes = Math.min(this.movimientosMaximos, normalizarMovimientos(estado.movimientosRestantes));
     }
+  }
+
+  registrarPuntos(cantidad) {
+    if (!Number.isFinite(cantidad) || cantidad <= 0) return;
+    this.puntuacion += Math.floor(cantidad);
+    this.mejorPuntuacion = Math.max(this.mejorPuntuacion, this.puntuacion);
   }
 
   reiniciarMovimientos() {
