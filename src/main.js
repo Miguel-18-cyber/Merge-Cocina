@@ -587,7 +587,7 @@ function renderPerfilVista() {
   if (!perfil) return;
   document.querySelector('#profile-display-name').textContent = perfil.nombre;
   document.querySelector('#profile-account-status').textContent = sesionOnline
-    ? 'Cuenta conectada con Google. Tu apodo y tus estadísticas del juego son visibles para otros jugadores.'
+    ? 'Cuenta conectada con Google. Tu apodo es visible; las estadísticas aparecerán tras la validación del servidor.'
     : 'Perfil guardado en este dispositivo.';
   document.querySelector('#sign-out-button').hidden = !sesionOnline;
   document.querySelector('#profile-display-age').textContent = `${perfil.edad} años`;
@@ -1285,7 +1285,7 @@ function renderListaJugadores(contenedor, jugadores, tipo) {
 async function cargarPanelSocial() {
   const feedback = document.querySelector('#social-feedback');
   if (!NUBE_CONFIGURADA || !sesionOnline) {
-    feedback.textContent = 'Conecta tu cuenta de Google para buscar amigos y ver la clasificación.';
+    feedback.textContent = 'Conecta tu cuenta de Google para buscar amigos. La clasificación se activará tras la validación del servidor.';
     return;
   }
   feedback.textContent = 'Cargando amigos y clasificación…';
