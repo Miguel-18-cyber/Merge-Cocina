@@ -40,6 +40,7 @@ const CLAVE_LOGROS = 'merge-cocina-logros-v1';
 const CLAVE_EVENTOS_PEDIDO = 'merge-cocina-pedidos-semanales-v1';
 const COSTE_PAQUETE_MOVIMIENTOS = 300;
 const formatoMonedas = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 0 });
+const formatoPuntos = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 0 });
 const formatoMovimientos = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 1 });
 const formatoDolares = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 restaurarProgreso();
@@ -146,6 +147,8 @@ function renderCentro() {
       ? `¡Nivel ${juego.nivel.id} completado! Tu cocina está lista para el siguiente reto.`
     : `Nivel ${juego.nivel.id} · ${pedidosPendientes} ${pedidosPendientes === 1 ? 'pedido' : 'pedidos'} por completar. Retoma donde lo dejaste.`;
   document.querySelector('#player-level').textContent = String(juego.nivel.id);
+  document.querySelector('#hub-score').textContent = formatoPuntos.format(juego.puntuacion);
+  document.querySelector('#hub-best-score').textContent = formatoPuntos.format(juego.mejorPuntuacion);
   document.querySelector('#hub-level-progress-copy').textContent = `${pedidosCompletados} / ${juego.nivel.pedidos.length} pedidos`;
   document.querySelector('#hub-level-progress-track').setAttribute('aria-valuemax', String(juego.nivel.pedidos.length));
   document.querySelector('#hub-level-progress-track').setAttribute('aria-valuenow', String(pedidosCompletados));
@@ -735,6 +738,8 @@ function renderEstado() {
   document.querySelector('#level-label').textContent = `NIVEL ${juego.nivel.id}`;
   document.querySelector('#level-name').textContent = juego.nivel.nombre;
   document.querySelector('#level-count').textContent = `${juego.nivel.id} / ${NIVELES.length}`;
+  document.querySelector('#score-count').textContent = formatoPuntos.format(juego.puntuacion);
+  document.querySelector('#best-score-count').textContent = formatoPuntos.format(juego.mejorPuntuacion);
   document.querySelector('#coins-count').textContent = `🪙 ${formatoMonedas.format(juego.monedas)}`;
   document.querySelector('#stars-count').textContent = `⭐ ${juego.estrellas}`;
   renderTablero();
@@ -846,7 +851,7 @@ function tocarCelda(indice) {
   fusionada = indice;
   messageElement.textContent = resultado.derrota
     ? textoDerrota(resultado.derrota)
-    : `¡Combinadas! Descubriste ${nombrePieza(resultado.pieza.familia, resultado.pieza.nivel).toLowerCase()}.`;
+    : `¡Combinadas! +${formatoPuntos.format(resultado.puntos)} puntos. Descubriste ${nombrePieza(resultado.pieza.familia, resultado.pieza.nivel).toLowerCase()}.`;
   renderEstado();
   window.setTimeout(() => { fusionada = null; }, 360);
 }
@@ -878,7 +883,7 @@ function entregarPedido(pedidoId) {
   reproducirSonido(resultado.recompensa ? 'nivel' : 'pedido');
   messageElement.textContent = resultado.derrota
     ? textoDerrota(resultado.derrota)
-    : 'Pedido entregado. ¡Buen trabajo!';
+    : `Pedido entregado: +${formatoPuntos.format(resultado.puntos)} puntos. ¡Buen trabajo!`;
   renderEstado();
   if (resultado.recompensa) {
     mostrarRecompensa();
