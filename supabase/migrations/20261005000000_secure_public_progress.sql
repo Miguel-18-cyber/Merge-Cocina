@@ -153,7 +153,7 @@ language sql
 stable
 security definer
 set search_path = ''
-as $
+as $$
   select p.user_id, p.nickname, p.current_level::integer,
     p.orders_completed::integer, p.orders_total::integer,
     p.important_achievements, p.coins, p.progress_verified
@@ -216,7 +216,7 @@ language sql
 stable
 security definer
 set search_path = ''
-as $
+as $$
   select f.id, f.requester_id, f.recipient_id, f.status, f.created_at,
     p.user_id, p.nickname,
     case when p.progress_verified then p.current_level::integer else null end,
