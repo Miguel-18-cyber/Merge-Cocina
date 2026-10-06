@@ -952,7 +952,6 @@ function elegirPeriodoClasificacion(periodo) {
 function limpiarDatosLocalesDeOtraCuenta() {
   sincronizandoDesdeNube = true;
   [CLAVE_PROGRESO, CLAVE_PERFIL, CLAVE_COSMETICOS, CLAVE_LOGROS, CLAVE_EVENTOS_PEDIDO, CLAVE_DUENO_NUBE, CLAVE_NUBE_SUCIO].forEach((clave) => localStorage.removeItem(clave));
-  eventosPedidoPendientes = [];
   perfil = null;
   juego.reiniciarPartida();
   coleccion = restaurarCosmeticos();
