@@ -135,7 +135,7 @@ footer { padding: 17px 5px 0; color: #858eaf; font-size: 12px; text-align: cente
 .player-level div, .hub-stat div { display: grid; gap: 4px; }
 .player-level small, .hub-stat small { color: #aab2d0; font-size: 9px; font-weight: 700; letter-spacing: .1em; }
 .player-level strong { color: #ffdf8f; font-size: 25px; }
-.hub-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 11px; margin: 13px 0 24px; }
+.hub-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 11px; margin: 13px 0 24px; }
 .hub-stat { display: flex; min-height: 80px; align-items: center; gap: 12px; padding: 14px; border-radius: 19px; }
 .hub-stat > span { font-size: 24px; }
 .hub-stat strong { font-size: 18px; }
@@ -1024,4 +1024,24 @@ button:focus-visible {
   border-color: #e4d8c9 !important;
   background: #fffdf8 !important;
   color: #786c7b !important;
+}
+
+.score-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 11px;
+  margin: 0 auto 12px;
+  padding: 9px 12px;
+  border: 1px solid #d8c8e5;
+  border-radius: 14px;
+  background: #eee8f4;
+  color: #66586a;
+  font-size: 12px;
+}
+.score-strip strong { color: #65527f; font-variant-numeric: tabular-nums; }
+.hub-stat:has(#hub-score) { border-color: #d8c8e5 !important; background: #eee8f4 !important; }
+.hub-stat:has(#hub-score) strong { color: #65527f !important; font-variant-numeric: tabular-nums; }
+@media (max-width: 600px) {
+  .hub-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
