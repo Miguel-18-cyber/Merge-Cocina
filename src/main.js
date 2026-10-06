@@ -13,6 +13,7 @@ import { PAQUETES_MONEDAS } from './data/paquetes-monedas.js';
 import { crearLogros } from './data/logros.js';
 import { iniciarAnunciosH5, mostrarAnuncioCadaDosNiveles } from './game/anuncios-h5.js';
 import { ControladorJuego } from './game/estado.js';
+import { alternarSonido, sonidoActivado, reproducirSonido } from './game/sonidos.js';
 import {
   NUBE_CONFIGURADA,
   iniciarSesionGoogle,
@@ -68,6 +69,7 @@ const ordersListElement = document.querySelector('#orders-list');
 const generateButton = document.querySelector('#generate-button');
 const hintButton = document.querySelector('#hint-button');
 const dialogElement = document.querySelector('#level-dialog');
+const soundToggleButton = document.querySelector('#sound-toggle-button');
 const profileScreen = document.querySelector('#profile-screen');
 const hubScreen = document.querySelector('#hub-screen');
 const gameScreen = document.querySelector('#game-screen');
@@ -89,6 +91,14 @@ function mostrarPerfil() {
   gameScreen.hidden = true;
   profileForm.reset();
   document.querySelector('#player-name').focus();
+}
+
+function actualizarBotonSonido() {
+  const activado = sonidoActivado();
+  soundToggleButton.textContent = activado ? '🔊' : '🔇';
+  soundToggleButton.setAttribute('aria-pressed', String(activado));
+  soundToggleButton.setAttribute('aria-label', activado ? 'Desactivar sonidos' : 'Activar sonidos');
+  soundToggleButton.title = activado ? 'Sonido activado' : 'Sonido desactivado';
 }
 
 function mostrarCentro() {
@@ -813,6 +823,7 @@ function tocarCelda(indice) {
   const resultado = juego.combinar(seleccionada, indice);
   if (!resultado.ok) {
     if (resultado.motivo === 'piezas-distintas') {
+      reproducirSonido('error');
       seleccionada = resultado.derrota ? null : indice;
       messageElement.textContent = resultado.derrota
         ? textoDerrota(resultado.derrota)
@@ -831,6 +842,7 @@ function tocarCelda(indice) {
     return;
   }
   seleccionada = null;
+  reproducirSonido('fusion');
   fusionada = indice;
   messageElement.textContent = resultado.derrota
     ? textoDerrota(resultado.derrota)
@@ -851,6 +863,7 @@ function generarPieza() {
   }
   seleccionada = null;
   pistaIndices = [];
+  reproducirSonido('ingrediente');
   messageElement.textContent = resultado.derrota
     ? textoDerrota(resultado.derrota)
     : `Llegó un ingrediente de ${resultado.familia === 'pan' ? 'pan' : 'fruta'}.`;
@@ -862,6 +875,7 @@ function entregarPedido(pedidoId) {
   if (!resultado.ok) return;
   seleccionada = null;
   pistaIndices = [];
+  reproducirSonido(resultado.recompensa ? 'nivel' : 'pedido');
   messageElement.textContent = resultado.derrota
     ? textoDerrota(resultado.derrota)
     : 'Pedido entregado. ¡Buen trabajo!';
@@ -1361,6 +1375,12 @@ async function ejecutarBusquedaJugadores(apodo) {
   }
 }
 
+
+soundToggleButton.addEventListener('click', () => {
+  alternarSonido();
+  actualizarBotonSonido();
+});
+actualizarBotonSonido();
 
 document.querySelector('#google-login-button').addEventListener('click', async () => {
   if (!NUBE_CONFIGURADA) return;
