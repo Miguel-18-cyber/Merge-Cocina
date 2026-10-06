@@ -941,3 +941,69 @@ button:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .board-cell.hinted { animation: none; }
 }
+
+
+/* Contraste vivo del juego: jade, ciruela, coral, miel, cielo y lavanda. */
+#game-screen .level-card {
+  border-color: #55456f !important;
+  background: #65527f !important;
+  background-image: none !important;
+  box-shadow: 0 9px 22px #dfd2c7 !important;
+}
+#game-screen .level-card .eyebrow { color: #f6d982 !important; }
+#game-screen .level-card h2 { color: #fffaf1 !important; }
+#game-screen .level-card .level-hint { color: #f2eaf8 !important; }
+
+#game-screen[data-skin="clasico"] { --skin-board: #57917b; --skin-accent: #f1d494; }
+#game-screen[data-skin="huerto"] { --skin-board: #578a58; --skin-accent: #e1ed9d; }
+#game-screen[data-skin="fresa"] { --skin-board: #a94f6d; --skin-accent: #ffd0d5; }
+#game-screen[data-skin="noche"] { --skin-board: #5d548b; --skin-accent: #d5c3ff; }
+#game-screen[data-skin="dorado"] { --skin-board: #a87936; --skin-accent: #ffe49b; }
+#game-screen[data-skin="marino"] { --skin-board: #397a91; --skin-accent: #aee3ef; }
+#game-screen[data-skin="lavanda"] { --skin-board: #80609c; --skin-accent: #e6d0ff; }
+#game-screen[data-skin="citrico"] { --skin-board: #9b842d; --skin-accent: #ffec9a; }
+#game-screen[data-skin="atardecer"] { --skin-board: #ad625d; --skin-accent: #ffd0ad; }
+#game-screen[data-skin="caramelo"] { --skin-board: #986342; --skin-accent: #f8d2a5; }
+#game-screen[data-skin="esmeralda"] { --skin-board: #3d8069; --skin-accent: #b7ebbd; }
+#game-screen[data-skin="caramelos"] { --skin-board: #a84f83; --skin-accent: #ffd0e8; }
+#game-screen[data-skin="galaxia"] { --skin-board: #55589a; --skin-accent: #d8d0ff; }
+#game-screen[data-skin] .board-card {
+  border-color: var(--skin-accent) !important;
+  background: var(--skin-board, #57917b) !important;
+  background-image: none !important;
+  box-shadow: 0 9px 22px #dfd2c7 !important;
+}
+#game-screen[data-skin] .level-card {
+  border-color: #55456f !important;
+  background: #65527f !important;
+}
+#game-screen[data-skin] .board-cell,
+#game-screen[data-skin] .board-cell:not(.empty):not(.selected):not(.hinted),
+#game-screen[data-skin] .board-cell.empty {
+  border-color: #b8a17c !important;
+  background-image: none !important;
+  color: #493d50 !important;
+  box-shadow: inset 0 1px #fffdf8 !important;
+}
+#game-screen[data-skin] .board-cell:nth-child(5n + 1):not(.empty) { background: #f4c4b8 !important; }
+#game-screen[data-skin] .board-cell:nth-child(5n + 2):not(.empty) { background: #f2d985 !important; }
+#game-screen[data-skin] .board-cell:nth-child(5n + 3):not(.empty) { background: #bfe0bd !important; }
+#game-screen[data-skin] .board-cell:nth-child(5n + 4):not(.empty) { background: #b8dcea !important; }
+#game-screen[data-skin] .board-cell:nth-child(5n):not(.empty) { background: #d4c5e8 !important; }
+#game-screen[data-skin] .board-cell.empty:nth-child(5n + 1) { background: #ffead7 !important; }
+#game-screen[data-skin] .board-cell.empty:nth-child(5n + 2) { background: #fff2c8 !important; }
+#game-screen[data-skin] .board-cell.empty:nth-child(5n + 3) { background: #e2f0df !important; }
+#game-screen[data-skin] .board-cell.empty:nth-child(5n + 4) { background: #e1eff5 !important; }
+#game-screen[data-skin] .board-cell.empty:nth-child(5n) { background: #eee6f5 !important; }
+#game-screen[data-skin] .board-cell.selected {
+  border-color: #b65e70 !important;
+  background: #ed9aa4 !important;
+  box-shadow: 0 0 0 3px #f5d5d7 !important;
+}
+#game-screen[data-skin] .board-cell.hinted {
+  border-color: #a98425 !important;
+  background: #f3d05e !important;
+  box-shadow: 0 0 0 3px #f9e8aa !important;
+}
+#game-screen .piece-level { color: #514456 !important; }
+#game-screen .board-cell:focus-visible { outline-color: #65527f !important; }
