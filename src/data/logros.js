@@ -23,6 +23,7 @@ export function crearLogros({
     { id: 'chef-constante', titulo: 'Chef constante', descripcion: 'Completa 3 niveles.', icono: '🥣', meta: 3, medir: (estado) => estado.nivelesCompletados },
     { id: 'ruta-de-sabores', titulo: 'Ruta de sabores', descripcion: 'Completa 5 niveles.', icono: '🧑‍🍳', meta: 5, medir: (estado) => estado.nivelesCompletados },
     { id: 'gran-banquete', titulo: 'Gran banquete', descripcion: 'Completa los primeros 8 niveles de la aventura.', icono: '🎉', meta: 8, medir: (estado) => estado.nivelesCompletados },
+    { id: 'cocina-legendaria', titulo: 'Cocina legendaria', descripcion: 'Completa los 16 niveles de la aventura.', icono: '👑', meta: 16, medir: (estado) => estado.nivelesCompletados },
     { id: 'estrella-en-ascenso', titulo: 'Estrella en ascenso', descripcion: 'Consigue 5 estrellas.', icono: '✨', meta: 5, medir: (estado) => estado.estrellas },
     { id: 'cielo-estrellado', titulo: 'Cielo estrellado', descripcion: 'Consigue 15 estrellas.', icono: '🌌', meta: 15, medir: (estado) => estado.estrellas },
     { id: 'constelacion', titulo: 'Constelación de cocina', descripcion: 'Consigue 30 estrellas.', icono: '💫', meta: 30, medir: (estado) => estado.estrellas },
