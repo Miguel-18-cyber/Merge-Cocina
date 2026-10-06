@@ -16,12 +16,16 @@ Un juego casual de cocina para combinar ingredientes, completar pedidos y pasar 
 - La campaña tiene 16 niveles con pedidos variados; generar un ingrediente descuenta medio movimiento y el nivel calcula el margen a partir de las recetas.
 - Completar los primeros 8 niveles desbloquea «Gran banquete»; terminar los 16 desbloquea «Cocina legendaria», uno de los logros principales del perfil público cuando el servidor valide la partida.
 - Los efectos de fusión, ingredientes, entregas y victoria se pueden activar o silenciar desde el menú; la preferencia se conserva en el dispositivo.
+- El menú incluye un resumen de las reglas y el tablero puede recorrerse con las flechas del teclado; Enter o Espacio activa la casilla.
 - La tienda ofrece 13 estilos de tablero, 11 marcos y 12 iconos de perfil. Los artículos desbloqueados y equipados se guardan aparte y sobreviven al reinicio de la partida.
 - Completar el nivel 1 entrega 500 monedas; la recompensa aumenta 500 por nivel y suma 150 monedas adicionales después de cada bloque de cinco niveles. Completar una receta no gasta movimientos y conserva la recompensa hasta terminar todos los pedidos.
 - Cinco movimientos extra cuestan 300 monedas. Los marcos y estilos comprables cuestan más de 500.000 monedas; al terminar el nivel 16 se puede comenzar otra vuelta y conservar el saldo.
 - Los saldos de las versiones anteriores se ajustan automáticamente a esta escala de monedas.
 - El perfil permite consultar nombre y edad, escribir una descripción, guardar una foto comprimida y equipar los marcos desbloqueados con monedas.
 - El proyecto incluye configuración de Vite PWA y puede publicarse como sitio estático en Vercel con `pnpm run build` y salida `dist/`.
+- El reto diario se completa al terminar un nivel, según la fecha de Lima. En el modo local da 250 monedas una vez al día; en una cuenta en línea no entrega moneda hasta que un servidor pueda validar el premio.
+- Desde Mi perfil se puede descargar/restaurar una copia JSON del progreso del juego. La copia no incluye el perfil, imágenes, credenciales ni sesión; restaurarla reemplaza la partida actual.
+- El PWA muestra un aviso cuando pierde conexión. El guardado local sigue disponible; al volver la red, intenta reanudar la sincronización privada configurada.
 - Al quedarse sin movimientos se registra una derrota. La segunda derrota reinicia los pedidos del nivel actual; el nivel, las monedas y las estrellas se conservan.
 - La tienda muestra nueve paquetes de monedas entre US$0,50 y US$200 con sus cantidades. Los botones siguen desactivados: falta integrar un proveedor de pagos y un backend que verifique cobros antes de acreditar monedas.
 
@@ -65,3 +69,6 @@ Abre la página al menos una vez con conexión para guardar sus recursos sin con
 
 Cada navegador mantiene su propio progreso. El botón «Reiniciar progreso» lo
 borra tras pedir confirmación.
+
+
+Consulta [GUIA_PUBLICACION.md](GUIA_PUBLICACION.md) para configurar Vercel y conocer qué servicios requieren habilitación en Supabase antes de abrir competencias o pagos.

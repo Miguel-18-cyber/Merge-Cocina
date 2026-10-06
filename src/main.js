@@ -39,6 +39,10 @@ const CLAVE_COSMETICOS = 'merge-cocina-cosmeticos-v1';
 const CLAVE_LOGROS = 'merge-cocina-logros-v1';
 const CLAVE_EVENTOS_PEDIDO = 'merge-cocina-pedidos-semanales-v1';
 const COSTE_PAQUETE_MOVIMIENTOS = 300;
+const CLAVE_RETO_DIARIO = 'merge-cocina-reto-diario-v1';
+const RECOMPENSA_RETO_DIARIO = 250;
+const connectionBanner = document.querySelector('#connection-banner');
+let connectionBannerTimer = null;
 const formatoMonedas = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 0 });
 const formatoPuntos = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 0 });
 const formatoMovimientos = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 1 });
@@ -85,6 +89,26 @@ const profileIconElement = document.querySelector('#profile-avatar-placeholder')
 const coinPackListElement = document.querySelector('#coin-pack-list');
 
 aplicarTemaTablero();
+
+boardElement.addEventListener('keydown', (evento) => {
+  const actual = evento.target.closest('.board-cell');
+  if (!actual) return;
+  const indice = Number(actual.dataset.index);
+  const desplazamientos = {
+    ArrowLeft: -1,
+    ArrowRight: 1,
+    ArrowUp: -COLUMNAS,
+    ArrowDown: COLUMNAS,
+  };
+  const desplazamiento = desplazamientos[evento.key];
+  if (!desplazamiento) return;
+  const siguiente = indice + desplazamiento;
+  if (siguiente < 0 || siguiente >= juego.tablero.length) return;
+  if (evento.key === 'ArrowLeft' && indice % COLUMNAS === 0) return;
+  if (evento.key === 'ArrowRight' && indice % COLUMNAS === COLUMNAS - 1) return;
+  evento.preventDefault();
+  boardElement.children[siguiente]?.focus();
+});
 
 function mostrarPerfil() {
   profileScreen.hidden = false;
@@ -139,6 +163,15 @@ function renderCentro() {
   const completados = logros.filter((logro) => logro.logrado).length;
   const pedidosCompletados = juego.nivel.pedidos.length - juego.pedidosRestantes.size;
   document.querySelector('#welcome-title').textContent = `¡Hola, ${perfil.nombre}!`;
+  const retoListo = leerRetoDiario();
+  document.querySelector('#daily-challenge-copy').textContent = retoListo?.completado
+    ? retoListo.recompensaMonedas > 0
+      ? '¡Reto cumplido! Vuelve mañana para una nueva recompensa.'
+      : 'Reto cumplido. Las monedas extra de cuentas en línea esperan validación del servidor.'
+    : sesionOnline?.user?.id
+      ? 'Completa un nivel hoy. Las monedas extra se habilitarán cuando el servidor valide la recompensa.'
+      : `Completa un nivel hoy y gana ${formatoMonedas.format(RECOMPENSA_RETO_DIARIO)} monedas extra.`;
+  document.querySelector('#daily-challenge-status').textContent = retoListo?.completado ? 'Completado ✓' : 'Pendiente';
   const pedidosPendientes = juego.pedidosRestantes.size;
   const nivelFinalizado = juego.recompensado && juego.nivel.id === NIVELES.length;
   document.querySelector('#welcome-copy').textContent = nivelFinalizado
@@ -661,6 +694,7 @@ function renderTablero() {
     const columna = indice % COLUMNAS + 1;
     const fila = Math.floor(indice / COLUMNAS) + 1;
     celda.type = 'button';
+    celda.dataset.index = String(indice);
     celda.disabled = juego.movimientosRestantes < 1;
     celda.className = `board-cell${pieza ? '' : ' empty'}${seleccionada === indice ? ' selected' : ''}${fusionada === indice ? ' merged' : ''}${pistaIndices.includes(indice) ? ' hinted' : ''}`;
     celda.setAttribute('aria-pressed', String(seleccionada === indice));
@@ -768,13 +802,120 @@ function avanzarNivelCompletado() {
   mostrarAnuncioCadaDosNiveles(nivelCompletado, continuar);
 }
 
-function mostrarRecompensa() {
+function mostrarRecompensa(bonusReto = 0) {
   const { monedas, estrellas } = juego.nivel.recompensa;
-  document.querySelector('#dialog-reward').textContent = `Ganaste ${formatoMonedas.format(monedas)} monedas y ${estrellas} ${estrellas === 1 ? 'estrella' : 'estrellas'}.`;
+  const textoReto = bonusReto > 0 ? ` También ganaste ${formatoMonedas.format(bonusReto)} por el reto diario.` : '';
+  document.querySelector('#dialog-reward').textContent = `Ganaste ${formatoMonedas.format(monedas)} monedas y ${estrellas} ${estrellas === 1 ? 'estrella' : 'estrellas'}.${textoReto}`;
   document.querySelector('#next-level-button').textContent = juego.nivel.id < NIVELES.length
     ? 'Siguiente nivel'
     : 'Empezar otra vuelta';
   if (!dialogElement.open) dialogElement.showModal();
+}
+
+function fechaLocalActual() {
+  const partes = new Intl.DateTimeFormat('en', {
+    timeZone: 'America/Lima',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+  const obtener = (tipo) => partes.find((parte) => parte.type === tipo)?.value ?? '';
+  return `${obtener('year')}-${obtener('month')}-${obtener('day')}`;
+}
+
+function propietarioRetoDiario() {
+  return sesionOnline?.user?.id || `local:${perfil?.nombre?.toLocaleLowerCase('es-PE') || 'jugador'}`;
+}
+
+function leerRetoDiario() {
+  try {
+    const reto = JSON.parse(localStorage.getItem(CLAVE_RETO_DIARIO));
+    return reto?.fecha === fechaLocalActual() && reto?.propietario === propietarioRetoDiario() ? reto : null;
+  } catch {
+    return null;
+  }
+}
+
+function reclamarRetoDiario() {
+  if (leerRetoDiario()?.completado) return 0;
+  const recompensaMonedas = sesionOnline?.user?.id ? 0 : RECOMPENSA_RETO_DIARIO;
+  try {
+    localStorage.setItem(CLAVE_RETO_DIARIO, JSON.stringify({
+      fecha: fechaLocalActual(),
+      propietario: propietarioRetoDiario(),
+      completado: true,
+      recompensaMonedas,
+    }));
+  } catch (error) {
+    console.warn('No se pudo guardar el reto diario.', error);
+    return 0;
+  }
+  return recompensaMonedas;
+}
+
+function exportarCopiaPartida() {
+  const archivo = {
+    producto: 'merge-cocina',
+    versionCopia: 1,
+    exportado: new Date().toISOString(),
+    partida: juego.serializar(),
+  };
+  const enlace = document.createElement('a');
+  const url = URL.createObjectURL(new Blob([JSON.stringify(archivo, null, 2)], { type: 'application/json' }));
+  enlace.href = url;
+  enlace.download = `merge-cocina-partida-${fechaLocalActual()}.json`;
+  enlace.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  document.querySelector('#backup-feedback').textContent = 'Copia descargada. Guárdala en un lugar seguro.';
+}
+
+async function importarCopiaPartida(evento) {
+  const input = evento.currentTarget;
+  const archivo = input.files?.[0];
+  const feedback = document.querySelector('#backup-feedback');
+  if (!archivo) return;
+  try {
+    if (archivo.size > 1_000_000) throw new Error('El archivo supera el tamaño permitido para una copia de partida.');
+    const copia = JSON.parse(await archivo.text());
+    if (copia?.producto !== 'merge-cocina' || copia?.versionCopia !== 1 || !copia.partida) {
+      throw new Error('Ese archivo no es una copia compatible de Merge Cocina.');
+    }
+    const monedas = Number(copia.partida.monedas);
+    if (!Number.isSafeInteger(monedas) || monedas < 0) throw new Error('La copia contiene un saldo de monedas inválido.');
+    const partidaValidada = new ControladorJuego();
+    partidaValidada.restaurar(copia.partida);
+    if (!window.confirm('Esto reemplazará la partida guardada en este dispositivo o cuenta. ¿Quieres continuar?')) return;
+    juego.restaurar(partidaValidada.serializar());
+    seleccionada = null;
+    pistaIndices = [];
+    feedback.textContent = 'Partida restaurada. Tu progreso anterior fue reemplazado.';
+    renderEstado();
+  } catch (error) {
+    feedback.textContent = error instanceof SyntaxError
+      ? 'No se pudo leer el archivo. Selecciona una copia JSON válida.'
+      : error.message || 'No se pudo restaurar la partida.';
+  } finally {
+    input.value = '';
+  }
+}
+
+function actualizarAvisoConexion(mensajeOnline = '') {
+  if (!connectionBanner) return;
+  window.clearTimeout(connectionBannerTimer);
+  if (!navigator.onLine) {
+    connectionBanner.textContent = 'Sin conexión. La partida sigue guardándose en este dispositivo.';
+    connectionBanner.classList.add('offline');
+    connectionBanner.hidden = false;
+    return;
+  }
+  if (mensajeOnline) {
+    connectionBanner.textContent = mensajeOnline;
+    connectionBanner.classList.remove('offline');
+    connectionBanner.hidden = false;
+    connectionBannerTimer = window.setTimeout(() => { connectionBanner.hidden = true; }, 3500);
+    return;
+  }
+  connectionBanner.hidden = true;
 }
 
 function restaurarProgreso() {
@@ -878,6 +1019,8 @@ function generarPieza() {
 function entregarPedido(pedidoId) {
   const resultado = juego.entregar(pedidoId);
   if (!resultado.ok) return;
+  resultado.bonusReto = resultado.recompensa ? reclamarRetoDiario() : 0;
+  if (resultado.bonusReto) juego.monedas += resultado.bonusReto;
   seleccionada = null;
   pistaIndices = [];
   reproducirSonido(resultado.recompensa ? 'nivel' : 'pedido');
@@ -886,7 +1029,7 @@ function entregarPedido(pedidoId) {
     : `Pedido entregado: +${formatoPuntos.format(resultado.puntos)} puntos. ¡Buen trabajo!`;
   renderEstado();
   if (resultado.recompensa) {
-    mostrarRecompensa();
+    mostrarRecompensa(resultado.bonusReto);
   }
 }
 
@@ -1531,8 +1674,18 @@ document.querySelector('#restart-button').addEventListener('click', () => {
 
 window.addEventListener('pagehide', guardarProgreso);
 window.addEventListener('online', () => {
+  actualizarAvisoConexion('Conexión recuperada. Intentando sincronizar tu partida.');
   if (versionGuardadaNube < versionNube) void sincronizarNubeAhora();
 });
+window.addEventListener('offline', () => actualizarAvisoConexion());
+document.querySelector('#backup-export-button').addEventListener('click', exportarCopiaPartida);
+document.querySelector('#backup-import-button').addEventListener('click', () => {
+  document.querySelector('#backup-import-input').click();
+});
+document.querySelector('#backup-import-input').addEventListener('change', (evento) => {
+  void importarCopiaPartida(evento);
+});
+actualizarAvisoConexion();
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') guardarProgreso();
 });

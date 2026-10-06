@@ -15,6 +15,7 @@
   </head>
   <body>
     <main class="app-shell">
+      <p id="connection-banner" class="connection-banner" role="status" aria-live="polite" hidden></p>
       <section id="profile-screen" class="entry-screen glass-card" aria-labelledby="profile-title" hidden>
         <div class="entry-brand" aria-hidden="true">🍳</div>
         <p class="eyebrow accent">BIENVENIDO A LA COCINA</p>
@@ -46,6 +47,20 @@
             <div class="welcome-copy-block"><p class="eyebrow accent">TU COCINA TE ESPERA</p><h2 id="welcome-title">¡Hola!</h2><p id="welcome-copy" class="screen-copy"></p><div class="hub-level-progress"><div><span>Avance del nivel</span><strong id="hub-level-progress-copy">0 / 2 pedidos</strong></div><span id="hub-level-progress-track" role="progressbar" aria-label="Avance de los pedidos del nivel" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0"><span id="hub-level-progress"></span></span></div></div>
             <div class="player-level"><span>⭐</span><div><small>NIVEL DE JUGADOR</small><strong id="player-level">1</strong></div></div>
           </div>
+          <article class="daily-challenge glass-card">
+            <span class="daily-challenge-icon" aria-hidden="true">📅</span>
+            <div><p class="eyebrow">RETO DE HOY</p><strong id="daily-challenge-title">Una entrega diaria</strong><p id="daily-challenge-copy">Completa un nivel para ganar 250 monedas extra.</p></div>
+            <span id="daily-challenge-status" class="daily-challenge-status" role="status" aria-live="polite">Pendiente</span>
+          </article>
+          <details class="how-to-play glass-card">
+            <summary>¿Cómo se juega?</summary>
+            <ul>
+              <li>Combina dos productos iguales para crear uno de nivel superior.</li>
+              <li>Una combinación cuesta 1 movimiento; intentarlo con productos distintos también cuesta 1.</li>
+              <li>Generar un ingrediente cuesta ½ movimiento. Entregar un pedido listo es gratis.</li>
+              <li>Cada nivel calcula los movimientos que requieren sus recetas y añade 5 extra. Tras dos derrotas solo se reinician los pedidos actuales.</li>
+            </ul>
+          </details>
           <div class="hub-stats">
             <div class="hub-stat glass-card"><span>🪙</span><div><small>MONEDAS</small><strong id="hub-coins">0</strong></div></div>
             <div class="hub-stat glass-card"><span>🌟</span><div><small>ESTRELLAS</small><strong id="hub-stars">0</strong></div></div>
@@ -130,6 +145,16 @@
             <button class="primary-button" type="submit">Guardar cambios</button>
             <p id="profile-feedback" class="shop-feedback" role="status" aria-live="polite"></p>
           </form>
+          <section class="profile-backup glass-card" aria-labelledby="profile-backup-title">
+            <div><p class="eyebrow">COPIA LOCAL</p><h3 id="profile-backup-title">Respalda tu partida</h3>
+              <p>El archivo guarda tu nivel, monedas, estrellas, puntuación y tablero. No incluye correo, sesión de Google ni datos del perfil.</p></div>
+            <div class="profile-backup-actions">
+              <button id="backup-export-button" class="quiet-button" type="button">Descargar copia</button>
+              <button id="backup-import-button" class="quiet-button" type="button">Restaurar copia</button>
+              <input id="backup-import-input" type="file" accept="application/json,.json" hidden />
+            </div>
+            <p id="backup-feedback" class="form-note" role="status" aria-live="polite"></p>
+          </section>
           <section class="profile-frames-section" aria-labelledby="profile-frames-title">
             <div class="shop-section-heading"><div><p class="eyebrow">TU ÍCONO</p><h3 id="profile-frames-title">Marcos desbloqueados</h3></div><span>Equipa el que más te guste</span></div>
             <div id="profile-frame-options" class="profile-frame-options"></div>
@@ -171,7 +196,8 @@
           </section>
           <section class="glass-card board-card" aria-label="Tablero de cocina">
             <div class="score-strip" aria-label="Puntuación de la partida"><span>🏅 Puntos</span><strong id="score-count">0</strong><span>Récord personal</span><strong id="best-score-count">0</strong></div>
-            <div id="board" class="board" aria-label="Tablero de cocina con 5 columnas y 6 filas"></div>
+            <p id="board-keyboard-help" class="board-keyboard-help">Teclado: usa las flechas para moverte por el tablero y Enter o Espacio para seleccionar.</p>
+            <div id="board" class="board" aria-label="Tablero de cocina con 5 columnas y 6 filas" aria-describedby="board-keyboard-help"></div>
             <div class="moves-meter-wrap"><div><span>Movimientos de este intento</span><strong id="moves-meter-label">7 disponibles</strong></div><span id="moves-meter" class="moves-meter" role="progressbar" aria-label="Movimientos disponibles" aria-valuemin="0" aria-valuemax="7" aria-valuenow="7"><span id="moves-progress"></span></span></div>
             <div class="board-actions">
               <button id="generate-button" class="primary-button" type="button">Generar ingrediente <small class="action-cost">½ movimiento</small> <span aria-hidden="true">＋</span></button>

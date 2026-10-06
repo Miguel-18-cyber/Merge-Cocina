@@ -1045,3 +1045,34 @@ button:focus-visible {
 @media (max-width: 600px) {
   .hub-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Progreso local, red y respaldos del jugador */
+.daily-challenge { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; margin-top: 12px; padding: 17px 20px; border: 1px solid #d9c8a7; border-radius: 20px; background: #fffaf1; color: #352e40; box-shadow: 0 8px 22px rgba(90,68,47,.08); }
+.daily-challenge-icon { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 14px; background: #f5e5bc; font-size: 22px; }
+.daily-challenge .eyebrow { margin: 0 0 3px; color: #805c46; font-size: 9px; }
+.daily-challenge strong { color: #342c40; font-size: 14px; }
+.daily-challenge p:last-child { margin: 4px 0 0; color: #63596c; font-size: 12px; line-height: 1.45; }
+.daily-challenge-status { padding: 7px 10px; border: 1px solid #c5d6bb; border-radius: 99px; background: #edf4e8; color: #456b4b; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.connection-banner { position: sticky; z-index: 10; top: 8px; width: fit-content; max-width: 100%; margin: 0 auto 12px; padding: 10px 15px; border: 1px solid #b9d6c2; border-radius: 14px; background: #e8f3e9; color: #2e5b41; box-shadow: 0 6px 18px rgba(49,67,52,.12); font-size: 13px; text-align: center; }
+.connection-banner.offline { border-color: #e2c08d; background: #fff1d8; color: #744e21; }
+#connection-banner[hidden] { display: none; }
+.profile-backup { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 14px; margin: 14px 0 20px; padding: 18px; border: 1px solid #d9c8a7; border-radius: 20px; background: #fffaf1; color: #382f42; }
+.profile-backup h3 { margin: 0 0 5px; color: #342c40; font-size: 16px; }
+.profile-backup .eyebrow { margin: 0 0 4px; color: #805c46; font-size: 9px; }
+.profile-backup p:not(.eyebrow) { margin: 0; color: #63596c; font-size: 12px; line-height: 1.5; }
+.profile-backup-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.profile-backup-actions .quiet-button { min-height: 44px; border-color: #c7b8a0; background: #f6eee2; color: #4b4055; }
+.profile-backup-actions .quiet-button:hover { background: #eee1ce; }
+.profile-backup .form-note { grid-column: 1 / -1; margin: 0; color: #456b4b; }
+@media (max-width: 600px) {
+  .daily-challenge { grid-template-columns: auto minmax(0, 1fr); gap: 10px; padding: 14px; }
+  .daily-challenge-status { grid-column: 2; justify-self: start; }
+  .profile-backup { grid-template-columns: minmax(0, 1fr); }
+  .profile-backup-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .profile-backup-actions .quiet-button { padding-inline: 8px; font-size: 12px; }
+}
+.how-to-play { margin: 12px 0 18px; padding: 14px 18px; border: 1px solid #d9c8a7; border-radius: 18px; background: #fffaf1; color: #40374a; }
+.how-to-play summary { color: #40374a; cursor: pointer; font-size: 13px; font-weight: 700; }
+.how-to-play ul { display: grid; gap: 7px; margin: 13px 0 3px; padding-left: 20px; color: #63596c; font-size: 12px; line-height: 1.5; }
+.board-keyboard-help { margin: 0 0 10px; color: #e3e1ec; font-size: 11px; text-align: center; }
+@media (max-width: 600px) { .board-keyboard-help { font-size: 10px; } }
