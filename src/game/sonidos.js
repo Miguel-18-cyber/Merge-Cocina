@@ -53,7 +53,7 @@ export function reproducirSonido(nombre) {
       oscilador.type = 'sine';
       oscilador.frequency.setValueAtTime(frecuencia, empieza);
       volumen.gain.setValueAtTime(0.0001, empieza);
-      volumen.gain.exponentialRampToValueAtTime(0.035, empieza + 0.015);
+      volumen.gain.exponentialRampToValueAtTime(0.065, empieza + 0.015);
       volumen.gain.exponentialRampToValueAtTime(0.0001, termina);
       oscilador.connect(volumen);
       volumen.connect(contextoAudio.destination);
