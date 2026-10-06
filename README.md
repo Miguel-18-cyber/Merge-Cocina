@@ -14,6 +14,7 @@ Un juego casual de cocina para combinar ingredientes, completar pedidos y pasar 
 - La pantalla principal muestra el avance del nivel; los logros incluyen una barra de progreso.
 - Las fusiones dan 10 puntos por nivel del producto; cada pedido da 25 puntos por nivel y pieza, y terminar el nivel añade 50 por estrella. El récord personal se conserva en el dispositivo o en el guardado privado y no aparece en clasificaciones públicas.
 - La campaña tiene 16 niveles con pedidos variados; generar un ingrediente descuenta medio movimiento y el nivel calcula el margen a partir de las recetas.
+- Completar los primeros 8 niveles desbloquea «Gran banquete»; terminar los 16 desbloquea «Cocina legendaria», uno de los logros principales del perfil público cuando el servidor valide la partida.
 - Los efectos de fusión, ingredientes, entregas y victoria se pueden activar o silenciar desde el menú; la preferencia se conserva en el dispositivo.
 - La tienda ofrece 13 estilos de tablero, 11 marcos y 12 iconos de perfil. Los artículos desbloqueados y equipados se guardan aparte y sobreviven al reinicio de la partida.
 - Completar el nivel 1 entrega 500 monedas; la recompensa aumenta 500 por nivel y suma 150 monedas adicionales después de cada bloque de cinco niveles. Completar una receta no gasta movimientos y conserva la recompensa hasta terminar todos los pedidos.
