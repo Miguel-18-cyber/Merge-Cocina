@@ -1,4 +1,5 @@
 import './style.css';
+import { injectSpeedInsights } from '@vercel/speed-insights';
 import { COLUMNAS, emojiPieza, nombrePieza } from './game/modelos.js';
 import { NIVELES } from './data/niveles.js';
 import {
@@ -1692,4 +1693,7 @@ document.addEventListener('visibilitychange', () => {
 
 iniciarAnunciosH5();
 void iniciarAplicacion();
+
+// Initialize Vercel Speed Insights
+injectSpeedInsights();
 
