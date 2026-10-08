@@ -62,6 +62,9 @@ h1 { margin-bottom: 0; font-family: 'Segoe UI', system-ui, sans-serif; font-size
 .accent { color: #ffad96; }
 h2 { max-width: 510px; margin-bottom: 15px; font-family: 'Segoe UI', system-ui, sans-serif; font-size: clamp(32px, 6vw, 58px); font-weight: 800; letter-spacing: -.045em; line-height: 1.08; }
 footer { padding: 17px 5px 0; color: #858eaf; font-size: 12px; text-align: center; }
+.site-footer { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; padding-bottom: 8px; }
+.legal-links { display: inline-flex; align-items: center; gap: 9px; }
+.legal-links a { color: #65527f; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 .game-layout { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; max-width: 900px; margin: 0 auto; }
 .game-main { min-width: 0; }
 .level-card, .board-card { border-radius: 24px; }
