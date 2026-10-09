@@ -12,6 +12,16 @@ supabase/migrations/20261004000000_online_accounts.sql
 
 La primera migración crea las tablas y funciones base. Para el paso 2 de seguridad, el proyecto incluye además `supabase/migrations/20261005000000_secure_public_progress.sql`; cuando se active la configuración inicial de Supabase, ejecútala después de la migración base. Esta segunda migración limita el perfil público al apodo y al estado de validación, mueve la lectura del perfil propio a una función autenticada y hace que la PWA solo envíe el guardado privado. El guardado privado solo lo puede leer la cuenta propietaria.
 
+Después de esas dos, ejecuta `supabase/migrations/20261008000000_admin_progress_controls.sql`. Esta migración habilita el panel administrativo y agrega un control en la base de datos para que los reinicios requieran una cuenta autorizada. La lista privada de administradores se inicializa con `urbanoespanamiguelangel@gmail.com`; la cuenta debe iniciar sesión con Google usando ese mismo correo confirmado. Si tu cuenta de Google usa otra dirección, cambia el correo inicial de la migración antes de ejecutarla o reemplázalo desde SQL Editor con:
+
+```sql
+insert into app_private.merge_cocina_admin_emails (email)
+values (lower('tu-correo-de-google@example.com'))
+on conflict (email) do nothing;
+```
+
+La tabla de administradores está en un esquema privado, sin acceso desde la PWA. Las operaciones de búsqueda y reinicio vuelven a validar el permiso dentro de Postgres. El reinicio borra el progreso y las puntuaciones de competencia de esa cuenta, conserva apodo, datos del perfil, cosméticos y récord personal, y publica un marcador sincronizado para impedir que una partida vieja restaure los datos.
+
 ## 2. Configurar «Continuar con Google»
 
 1. En Google Cloud Console, crea un OAuth Client ID de tipo Web application.
