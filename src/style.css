@@ -52,9 +52,6 @@ body::after { right: -8rem; bottom: 5%; background: var(--violet); }
 .header-stat strong { color: #f4f5ff; font-size: 13px; }
 .header-stat small { color: #8f98b8; font-size: 9px; }
 .move-stat strong { color: #a3eee5; }
-.reset-button { display: inline-flex; min-height: 44px; flex: 0 0 auto; align-items: center; justify-content: center; gap: 7px; padding: 0 13px; border: 1px solid rgba(255,255,255,.15); border-radius: 14px; background: rgba(255,255,255,.055); color: #c6cce6; cursor: pointer; font: inherit; font-size: 12px; }
-.reset-button:hover { border-color: rgba(255,122,89,.45); background: rgba(255,122,89,.1); color: #fff; }
-.reset-button:focus-visible { outline: 3px solid rgba(25,195,177,.8); outline-offset: 2px; }
 .eyebrow { margin: 0 0 5px; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .16em; }
 h1, h2, p { margin-top: 0; }
 h1 { margin-bottom: 0; font-family: 'Segoe UI', system-ui, sans-serif; font-size: 19px; font-weight: 800; }
@@ -209,8 +206,6 @@ footer { padding: 17px 5px 0; color: #858eaf; font-size: 12px; text-align: cente
   .header-stat { align-items: flex-start; font-size: 9px; }
   .header-stat strong { font-size: 11px; }
   .header-stat small { font-size: 8px; }
-  .reset-button { width: 44px; padding: 0; font-size: 21px; }
-  .reset-button span { display: none; }
   .game-layout { grid-template-columns: minmax(0, 1fr); }
   .level-card { align-items: flex-start; flex-direction: column; gap: 8px; padding: 18px; }
   .level-hint { max-width: none; text-align: left; }
@@ -473,7 +468,7 @@ button:focus-visible { outline: 3px solid rgba(85,215,195,.85); outline-offset: 
   #game-screen .topbar {
     display: grid;
     grid-template-columns: 44px minmax(0, 1fr) auto;
-    grid-template-areas: "brand title menu" "stats stats reset";
+    grid-template-areas: "brand title menu" "stats stats stats";
     align-items: center;
     gap: 9px;
   }
@@ -483,8 +478,6 @@ button:focus-visible { outline: 3px solid rgba(85,215,195,.85); outline-offset: 
   #game-menu-button { grid-area: menu; min-height: 42px; padding: 0 10px; white-space: nowrap; }
   #game-screen .header-stats { grid-area: stats; width: 100%; min-width: 0; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding: 9px 8px; }
   #game-screen .header-stat { min-width: 0; overflow-wrap: anywhere; }
-  #game-screen #restart-button { grid-area: reset; width: 42px; min-height: 42px; justify-self: end; padding: 0; }
-  #game-screen #restart-button span { display: none; }
   #game-screen .level-card { min-width: 0; }
   #game-screen .orders-card, #game-screen .board-card { min-width: 0; }
   #game-screen .board-cell { min-height: 0; }
@@ -506,6 +499,38 @@ button:focus-visible { outline: 3px solid rgba(85,215,195,.85); outline-offset: 
 
 @media (prefers-reduced-motion: reduce) {
   .board-cell.hinted { animation: none; }
+}
+
+/* Logros agrupados por etapa y tipo, con filtros claros por dificultad. */
+.achievement-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 19px; }
+.achievement-filter { min-height: 38px; padding: 0 13px; border: 1px solid #ded2e7; border-radius: 999px; background: #f0eaf5; color: #514456; cursor: pointer; font: inherit; font-size: 12px; font-weight: 700; }
+.achievement-filter.selected { border-color: #69967a; background: #dcefe2; color: #28553a; }
+.achievement-sections { display: grid; gap: 26px; margin-top: 22px; }
+.achievement-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 9px; border-bottom: 1px solid #e4d8c9; }
+.achievement-section-heading h3 { margin: 0; color: #50465c; font-size: 17px; }
+.achievement-section-heading > span { color: #68736c; font-size: 12px; font-weight: 700; }
+.achievement-section .achievement-list { margin-top: 11px; }
+.achievement-copy h4 { margin: 5px 0 4px; font-size: 14px; }
+.achievement-metadata { display: flex; flex-wrap: wrap; gap: 6px; }
+.achievement-type, .achievement-difficulty { display: inline-flex; min-height: 22px; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 9px; font-weight: 800; letter-spacing: .025em; }
+.achievement-type { background: #eee8f4; color: #594a66; }
+.difficulty-fácil { background: #dcefe2; color: #28553a; }
+.difficulty-media { background: #fff0c2; color: #72551c; }
+.difficulty-difícil { background: #f6dfd1; color: #824331; }
+.difficulty-experto { background: #e7dbf2; color: #5a4272; }
+.achievement-empty { padding: 16px; border-radius: 14px; background: #fffdf8; }
+.admin-menu-button[hidden] { display: none; }
+.admin-view .screen-copy { max-width: 720px; line-height: 1.55; }
+.admin-reset-player-button { min-height: 42px; padding: 0 14px; border: 1px solid #e2b6a5; border-radius: 12px; background: #fff0e9; color: #7b3a2b; cursor: pointer; font: inherit; font-size: 12px; font-weight: 800; }
+.admin-reset-player-button:hover:not(:disabled) { border-color: #bd745d; background: #f9dfd4; }
+.admin-reset-player-button:disabled { cursor: wait; opacity: .7; }
+
+@media (max-width: 600px) {
+  .achievement-section-heading h3 { font-size: 15px; }
+  .achievement-card { align-items: flex-start; }
+  .achievement-status { padding-top: 4px; }
+  .admin-view .social-player-card { align-items: stretch; flex-direction: column; }
+  .admin-reset-player-button { width: 100%; }
 }
 
 
@@ -656,7 +681,6 @@ footer,
   background: #f2ece4 !important;
   background-image: none !important;
 }
-.reset-button,
 .quiet-button,
 .back-button,
 .profile-frame-option,
@@ -667,7 +691,6 @@ footer,
   background-image: none !important;
   color: #514456 !important;
 }
-.reset-button:hover,
 .quiet-button:hover,
 .back-button:hover,
 .profile-frame-option:hover:not(:disabled),
@@ -675,7 +698,6 @@ footer,
   border-color: #b9a6ca !important;
   background: #e8def0 !important;
 }
-.reset-button:focus-visible,
 .quiet-button:focus-visible,
 .back-button:focus-visible,
 button:focus-visible {
@@ -1163,7 +1185,7 @@ button:focus-visible {
   #game-screen .topbar {
     display: grid;
     grid-template-columns: 44px minmax(0, 1fr) auto;
-    grid-template-areas: "brand title menu" "stats stats reset";
+    grid-template-areas: "brand title menu" "stats stats stats";
     align-items: center;
     gap: 9px;
   }
@@ -1173,8 +1195,6 @@ button:focus-visible {
   #game-menu-button { grid-area: menu; min-height: 42px; padding: 0 10px; white-space: nowrap; }
   #game-screen .header-stats { grid-area: stats; width: 100%; min-width: 0; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding: 9px 8px; }
   #game-screen .header-stat { min-width: 0; overflow-wrap: anywhere; }
-  #game-screen #restart-button { grid-area: reset; width: 42px; min-height: 42px; justify-self: end; padding: 0; }
-  #game-screen #restart-button span { display: none; }
   #game-screen .level-card { min-width: 0; }
   #game-screen .orders-card, #game-screen .board-card { min-width: 0; }
   #game-screen .board-cell { min-height: 0; }

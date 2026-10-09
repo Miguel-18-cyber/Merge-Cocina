@@ -73,13 +73,32 @@
             <button class="hub-action" data-view="social-view" type="button"><span class="hub-action-icon">👥</span><span><strong>Amigos y clasificación</strong><small>Busca jugadores y compara tu avance</small></span><span class="action-arrow">→</span></button>
             <button class="hub-action" data-view="achievements-view" type="button"><span class="hub-action-icon">🏆</span><span><strong>Mis logros</strong><small>Revisa tus metas de cocina</small></span><span class="action-arrow">→</span></button>
             <button class="hub-action" data-view="shop-view" type="button"><span class="hub-action-icon">🛍️</span><span><strong>Tienda</strong><small>Monedas y artículos para tu partida</small></span><span class="action-arrow">→</span></button>
+            <button id="admin-menu-button" class="hub-action admin-menu-button" data-view="admin-view" type="button" hidden><span class="hub-action-icon">🛡️</span><span><strong>Administración</strong><small>Gestiona el progreso de las cuentas</small></span><span class="action-arrow">→</span></button>
           </div>
         </section>
         <section id="achievements-view" class="hub-view detail-view" aria-labelledby="achievements-title" hidden>
           <button class="back-button" data-view="dashboard-view" type="button">← Menú</button>
           <p class="eyebrow accent">TUS METAS</p><h2 id="achievements-title">Logros</h2>
           <p class="screen-copy">Sigue jugando para completar tus insignias.</p>
-          <div id="achievements-list" class="achievement-list"></div>
+          <div class="achievement-filters" role="group" aria-label="Filtrar logros por dificultad">
+            <button class="achievement-filter selected" type="button" data-difficulty="Todas" aria-pressed="true">Todas</button>
+            <button class="achievement-filter" type="button" data-difficulty="Fácil" aria-pressed="false">Fácil</button>
+            <button class="achievement-filter" type="button" data-difficulty="Media" aria-pressed="false">Media</button>
+            <button class="achievement-filter" type="button" data-difficulty="Difícil" aria-pressed="false">Difícil</button>
+            <button class="achievement-filter" type="button" data-difficulty="Experto" aria-pressed="false">Experto</button>
+          </div>
+          <div id="achievements-list" class="achievement-sections"></div>
+        </section>
+        <section id="admin-view" class="hub-view detail-view admin-view" aria-labelledby="admin-title" hidden>
+          <button class="back-button" data-view="dashboard-view" type="button">← Menú</button>
+          <p class="eyebrow accent">GESTIÓN DEL JUEGO</p><h2 id="admin-title">Administración</h2>
+          <p class="screen-copy">Busca una cuenta por su apodo para restablecer su progreso. Se conservan su perfil y artículos cosméticos; se reinician la partida, las monedas, las estrellas y los logros.</p>
+          <form id="admin-player-search-form" class="social-search-form">
+            <label for="admin-player-search-input">Buscar jugador por apodo</label>
+            <div class="social-search-row"><input id="admin-player-search-input" type="search" minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" placeholder="Escribe al menos 3 caracteres" autocomplete="off" required /><button class="primary-button" type="submit">Buscar</button></div>
+          </form>
+          <p id="admin-feedback" class="form-note" role="status" aria-live="polite"></p>
+          <div id="admin-player-results" class="social-list"></div>
         </section>
         <section id="social-view" class="hub-view detail-view social-view" aria-labelledby="social-title" hidden>
           <button class="back-button" data-view="dashboard-view" type="button">← Menú</button>
@@ -183,7 +202,6 @@
           <div class="header-stat"><span>Estrellas</span><strong id="stars-count">⭐ 0</strong></div>
           <div class="header-stat move-stat"><span>Movimientos</span><strong id="moves-count">7 / 7</strong><small id="defeats-count">Derrotas 0 / 2</small></div>
         </div>
-        <button id="restart-button" class="reset-button" type="button" aria-label="Reiniciar progreso" title="Reiniciar progreso">↺ <span>Reiniciar progreso</span></button>
       </header>
       <section class="game-layout" aria-label="Partida">
         <div class="game-main">

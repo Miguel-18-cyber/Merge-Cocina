@@ -31,6 +31,9 @@ import {
   solicitarAmistad,
   responderSolicitudAmistad,
   eliminarAmistad,
+  verificarAdministradorOnline,
+  buscarJugadoresAdmin,
+  reiniciarProgresoAdminOnline,
 } from './game/nube.js';
 
 const juego = new ControladorJuego();
@@ -58,6 +61,9 @@ let fusionada = null;
 let pistaIndices = [];
 let avatarTemporal = null;
 let sesionOnline = null;
+let esAdministrador = false;
+let tokenReinicioAdmin = null;
+let filtroDificultadLogros = 'Todas';
 let temporizadorNube = null;
 let versionNube = 0;
 let versionGuardadaNube = 0;
@@ -65,6 +71,7 @@ let sincronizacionEnCurso = false;
 let sincronizandoDesdeNube = false;
 const CLAVE_DUENO_NUBE = 'merge-cocina-cuenta-online-v1';
 const CLAVE_NUBE_SUCIO = 'merge-cocina-cuenta-online-dirty-v1';
+const CLAVE_REINICIO_ADMIN_LOCAL = 'merge-cocina-reinicio-admin-v1';
 const LOGROS_PUBLICOS = new Set(['primer-pedido', 'ruta-de-sabores', 'gran-banquete', 'cocina-legendaria', 'tesoro-de-cocina']);
 let clasificacionSemanalActual = [];
 let clasificacionHistoricaActual = [];
@@ -88,6 +95,9 @@ const profileImageElement = document.querySelector('#profile-avatar-image');
 const profileAvatarElement = document.querySelector('#profile-avatar');
 const profileIconElement = document.querySelector('#profile-avatar-placeholder');
 const coinPackListElement = document.querySelector('#coin-pack-list');
+const adminMenuButton = document.querySelector('#admin-menu-button');
+const adminPlayerResultsElement = document.querySelector('#admin-player-results');
+const adminFeedbackElement = document.querySelector('#admin-feedback');
 
 aplicarTemaTablero();
 
@@ -136,10 +146,11 @@ function mostrarCentro() {
 }
 
 function mostrarVistaCentro(id) {
-  hubScreen.querySelectorAll('.hub-view').forEach((view) => { view.hidden = view.id !== id; });
-  document.querySelector('#edit-profile-button').hidden = id === 'profile-view';
-  if (id === 'profile-view') renderPerfilVista();
-  if (id === 'social-view') void cargarPanelSocial();
+  const vistaSolicitada = id === 'admin-view' && !esAdministrador ? 'dashboard-view' : id;
+  hubScreen.querySelectorAll('.hub-view').forEach((view) => { view.hidden = view.id !== vistaSolicitada; });
+  document.querySelector('#edit-profile-button').hidden = vistaSolicitada === 'profile-view';
+  if (vistaSolicitada === 'profile-view') renderPerfilVista();
+  if (vistaSolicitada === 'social-view') void cargarPanelSocial();
 }
 
 function renderCentro() {
@@ -207,42 +218,178 @@ function renderCentro() {
     : `Añadir 5 movimientos por ${formatoMonedas.format(COSTE_PAQUETE_MOVIMIENTOS)} monedas.`;
   renderCosmeticos();
   renderPaquetesMonedas();
+  renderListaLogros(logros);
+}
+
+function renderListaLogros(logros) {
   achievementsListElement.replaceChildren();
-  logros.forEach((logro) => {
-    const item = document.createElement('article');
-    item.className = `achievement-card glass-card${logro.logrado ? ' unlocked' : ''}`;
-    const icon = document.createElement('span');
-    icon.className = 'achievement-icon';
-    icon.textContent = logro.icono;
-    const copy = document.createElement('div');
-    copy.className = 'achievement-copy';
-    const title = document.createElement('h3');
-    title.textContent = logro.titulo;
-    const description = document.createElement('p');
-    description.textContent = logro.descripcion;
-    const progress = document.createElement('div');
-    progress.className = 'achievement-progress';
-    const track = document.createElement('span');
-    track.className = 'achievement-track';
-    track.setAttribute('role', 'progressbar');
-    track.setAttribute('aria-label', `${logro.titulo}: ${logro.actual} de ${logro.meta}`);
-    track.setAttribute('aria-valuemin', '0');
-    track.setAttribute('aria-valuemax', String(logro.meta));
-    track.setAttribute('aria-valuenow', String(logro.actual));
-    const fill = document.createElement('span');
-    fill.style.width = `${logro.actual / logro.meta * 100}%`;
-    track.append(fill);
-    const count = document.createElement('small');
-    count.textContent = `${logro.actual} / ${logro.meta}`;
-    progress.append(track, count);
-    copy.append(title, description, progress);
-    const status = document.createElement('span');
-    status.className = 'achievement-status';
-    status.textContent = logro.logrado ? '✓' : '🔒';
-    status.setAttribute('aria-label', logro.logrado ? 'Completado' : 'Pendiente');
-    item.append(icon, copy, status);
-    achievementsListElement.append(item);
+  const visibles = filtroDificultadLogros === 'Todas'
+    ? logros
+    : logros.filter((logro) => logro.dificultad === filtroDificultadLogros);
+  const secciones = new Map();
+  visibles.forEach((logro) => {
+    if (!secciones.has(logro.seccion)) secciones.set(logro.seccion, []);
+    secciones.get(logro.seccion).push(logro);
   });
+
+  if (secciones.size === 0) {
+    const vacio = document.createElement('p');
+    vacio.className = 'achievement-empty form-note';
+    vacio.textContent = 'No hay logros de esta dificultad.';
+    achievementsListElement.append(vacio);
+    return;
+  }
+
+  secciones.forEach((logrosSeccion, nombreSeccion) => {
+    const section = document.createElement('section');
+    section.className = 'achievement-section';
+    const heading = document.createElement('div');
+    heading.className = 'achievement-section-heading';
+    const title = document.createElement('h3');
+    title.textContent = nombreSeccion;
+    const count = document.createElement('span');
+    const desbloqueados = logrosSeccion.filter((logro) => logro.logrado).length;
+    count.textContent = `${desbloqueados} / ${logrosSeccion.length}`;
+    heading.append(title, count);
+    const list = document.createElement('div');
+    list.className = 'achievement-list';
+
+    logrosSeccion.forEach((logro) => {
+      const item = document.createElement('article');
+      item.className = `achievement-card glass-card${logro.logrado ? ' unlocked' : ''}`;
+      const icon = document.createElement('span');
+      icon.className = 'achievement-icon';
+      icon.textContent = logro.icono;
+      const copy = document.createElement('div');
+      copy.className = 'achievement-copy';
+      const metadata = document.createElement('div');
+      metadata.className = 'achievement-metadata';
+      const type = document.createElement('span');
+      type.className = 'achievement-type';
+      type.textContent = logro.tipo;
+      const difficulty = document.createElement('span');
+      difficulty.className = `achievement-difficulty difficulty-${logro.dificultad.toLowerCase()}`;
+      difficulty.textContent = logro.dificultad;
+      metadata.append(type, difficulty);
+      const title = document.createElement('h4');
+      title.textContent = logro.titulo;
+      const description = document.createElement('p');
+      description.textContent = logro.descripcion;
+      const progress = document.createElement('div');
+      progress.className = 'achievement-progress';
+      const track = document.createElement('span');
+      track.className = 'achievement-track';
+      track.setAttribute('role', 'progressbar');
+      track.setAttribute('aria-label', `${logro.titulo}: ${logro.actual} de ${logro.meta}`);
+      track.setAttribute('aria-valuemin', '0');
+      track.setAttribute('aria-valuemax', String(logro.meta));
+      track.setAttribute('aria-valuenow', String(logro.actual));
+      const fill = document.createElement('span');
+      fill.style.width = `${logro.actual / logro.meta * 100}%`;
+      track.append(fill);
+      const amount = document.createElement('small');
+      amount.textContent = `${formatoMonedas.format(logro.actual)} / ${formatoMonedas.format(logro.meta)}`;
+      progress.append(track, amount);
+      copy.append(metadata, title, description, progress);
+      const status = document.createElement('span');
+      status.className = 'achievement-status';
+      status.textContent = logro.logrado ? '✓' : '🔒';
+      status.setAttribute('aria-label', logro.logrado ? 'Completado' : 'Pendiente');
+      item.append(icon, copy, status);
+      list.append(item);
+    });
+
+    section.append(heading, list);
+    achievementsListElement.append(section);
+  });
+}
+
+function renderJugadoresAdmin(jugadores) {
+  adminPlayerResultsElement.replaceChildren();
+  if (!jugadores.length) {
+    mostrarEstadoVacio(adminPlayerResultsElement, 'No encontramos cuentas con ese apodo.');
+    return;
+  }
+
+  jugadores.forEach((jugador) => {
+    const tarjeta = document.createElement('article');
+    tarjeta.className = 'social-player-card glass-card';
+    const identidad = document.createElement('div');
+    identidad.className = 'social-player-identity';
+    const apodo = document.createElement('h4');
+    apodo.textContent = jugador.nickname || 'Chef';
+    const nivel = document.createElement('strong');
+    nivel.textContent = `Nivel ${Number(jugador.current_level) || 1} · ${formatoMonedas.format(Number(jugador.coins) || 0)} monedas`;
+    identidad.append(apodo, nivel);
+    const accion = document.createElement('button');
+    accion.className = 'admin-reset-player-button';
+    accion.type = 'button';
+    accion.dataset.adminResetId = jugador.player_id;
+    accion.dataset.nickname = jugador.nickname || 'Chef';
+    accion.textContent = 'Restablecer progreso';
+    tarjeta.append(identidad, accion);
+    adminPlayerResultsElement.append(tarjeta);
+  });
+}
+
+async function actualizarAccesoAdministrador() {
+  esAdministrador = false;
+  adminMenuButton.hidden = true;
+  if (!NUBE_CONFIGURADA || !sesionOnline?.user?.id) return;
+  try { esAdministrador = await verificarAdministradorOnline(); }
+  catch { esAdministrador = false; }
+  adminMenuButton.hidden = !esAdministrador;
+}
+
+async function buscarCuentasParaAdministrar(apodo) {
+  adminPlayerResultsElement.replaceChildren();
+  if (!esAdministrador || !sesionOnline) {
+    adminFeedbackElement.textContent = 'Inicia sesión con la cuenta autorizada para usar esta función.';
+    return;
+  }
+  adminFeedbackElement.textContent = 'Buscando jugadores…';
+  try {
+    const jugadores = await buscarJugadoresAdmin(apodo);
+    renderJugadoresAdmin(jugadores);
+    adminFeedbackElement.textContent = jugadores.length
+      ? `Encontramos ${jugadores.length} ${jugadores.length === 1 ? 'cuenta' : 'cuentas'}.`
+      : 'La búsqueda terminó.';
+  } catch (error) {
+    adminFeedbackElement.textContent = error.message || 'No se pudo buscar jugadores.';
+  }
+}
+
+async function ejecutarReinicioAdministrativo(boton) {
+  const idJugador = boton.dataset.adminResetId;
+  const apodo = boton.dataset.nickname || 'este jugador';
+  if (!idJugador || !esAdministrador) return;
+  const confirmado = window.confirm(
+    `¿Restablecer el progreso de ${apodo}? Se reiniciarán su nivel, monedas, estrellas, logros y clasificación. Se conservarán su apodo, perfil, cosméticos y récord personal.`,
+  );
+  if (!confirmado) return;
+
+  boton.disabled = true;
+  adminFeedbackElement.textContent = `Restableciendo el progreso de ${apodo}…`;
+  try {
+    await reiniciarProgresoAdminOnline(idJugador);
+    boton.textContent = 'Progreso restablecido';
+    adminFeedbackElement.textContent = sesionOnline.user.id === idJugador
+      ? 'Tu progreso ya se reinició y está sincronizándose.'
+      : `El progreso de ${apodo} ya se reinició. La cuenta recibirá el cambio al volver a conectarse.`;
+    if (sesionOnline.user.id === idJugador) {
+      const cuenta = await cargarCuentaOnline();
+      if (aplicarDatosDeCuenta(cuenta)) {
+        localStorage.setItem(CLAVE_DUENO_NUBE, idJugador);
+        versionNube += 1;
+        renderEstado();
+        mostrarCentro();
+        void sincronizarNubeAhora();
+      }
+    }
+  } catch (error) {
+    boton.disabled = false;
+    adminFeedbackElement.textContent = error.message || 'No se pudo restablecer el progreso.';
+  }
 }
 
 function restaurarCosmeticos() {
@@ -1129,7 +1276,7 @@ function elegirPeriodoClasificacion(periodo) {
 
 function limpiarDatosLocalesDeOtraCuenta() {
   sincronizandoDesdeNube = true;
-  [CLAVE_PROGRESO, CLAVE_PERFIL, CLAVE_COSMETICOS, CLAVE_LOGROS, CLAVE_EVENTOS_PEDIDO, CLAVE_DUENO_NUBE, CLAVE_NUBE_SUCIO].forEach((clave) => localStorage.removeItem(clave));
+  [CLAVE_PROGRESO, CLAVE_PERFIL, CLAVE_COSMETICOS, CLAVE_LOGROS, CLAVE_EVENTOS_PEDIDO, CLAVE_DUENO_NUBE, CLAVE_NUBE_SUCIO, CLAVE_REINICIO_ADMIN_LOCAL].forEach((clave) => localStorage.removeItem(clave));
   perfil = null;
   juego.reiniciarPartida({ conservarRecord: false });
   coleccion = restaurarCosmeticos();
@@ -1140,8 +1287,45 @@ function limpiarDatosLocalesDeOtraCuenta() {
 function aplicarDatosDeCuenta(cuenta) {
   if (!cuenta?.perfil || !cuenta?.guardado) return false;
   const datos = cuenta.guardado;
+  const esReinicioAdmin = datos.__adminReset === true;
+  const localPerteneceACuenta = localStorage.getItem(CLAVE_DUENO_NUBE) === sesionOnline?.user?.id;
   sincronizandoDesdeNube = true;
   try {
+    if (esReinicioAdmin) {
+      const perfilLocal = localPerteneceACuenta ? perfil : null;
+      const cosmeticosLocales = localPerteneceACuenta ? localStorage.getItem(CLAVE_COSMETICOS) : null;
+      juego.reiniciarPartida({ conservarRecord: false });
+      juego.mejorPuntuacion = Math.max(0, Math.min(2_147_483_647, Math.floor(Number(datos.mejorPuntuacion) || 0)));
+      localStorage.setItem(CLAVE_PROGRESO, JSON.stringify(juego.serializar()));
+      perfil = {
+        nombre: cuenta.perfil.nickname,
+        edad: Number.isInteger(datos.profile?.edad) ? datos.profile.edad : Number.isInteger(perfilLocal?.edad) ? perfilLocal.edad : 0,
+        descripcion: typeof datos.profile?.descripcion === 'string' ? datos.profile.descripcion.slice(0, 180) : perfilLocal?.descripcion || '',
+        avatar: typeof datos.profile?.avatar === 'string' && datos.profile.avatar.startsWith('data:image/')
+          && datos.profile.avatar.length <= 1000000 ? datos.profile.avatar : perfilLocal?.avatar || '',
+        avatarMode: datos.profile?.avatarMode === 'icono' ? 'icono' : datos.profile?.avatar ? 'imagen' : perfilLocal?.avatarMode || 'icono',
+      };
+      localStorage.setItem(CLAVE_PERFIL, JSON.stringify(perfil));
+      if (datos.cosmetics && typeof datos.cosmetics === 'object') {
+        localStorage.setItem(CLAVE_COSMETICOS, JSON.stringify(datos.cosmetics));
+      } else if (cosmeticosLocales) {
+        localStorage.setItem(CLAVE_COSMETICOS, cosmeticosLocales);
+      } else {
+        localStorage.removeItem(CLAVE_COSMETICOS);
+      }
+      coleccion = restaurarCosmeticos();
+      logrosDesbloqueados = new Set();
+      guardarLogrosDesbloqueados();
+      tokenReinicioAdmin = typeof datos.__adminResetToken === 'string' ? datos.__adminResetToken : null;
+      if (tokenReinicioAdmin) localStorage.setItem(CLAVE_REINICIO_ADMIN_LOCAL, tokenReinicioAdmin);
+      else localStorage.removeItem(CLAVE_REINICIO_ADMIN_LOCAL);
+      localStorage.removeItem(CLAVE_NUBE_SUCIO);
+      aplicarTemaTablero();
+      return true;
+    }
+    tokenReinicioAdmin = typeof datos.__adminResetToken === 'string' ? datos.__adminResetToken : null;
+    if (tokenReinicioAdmin) localStorage.setItem(CLAVE_REINICIO_ADMIN_LOCAL, tokenReinicioAdmin);
+    else localStorage.removeItem(CLAVE_REINICIO_ADMIN_LOCAL);
     if (datos.game) {
       juego.restaurar(datos.game);
       localStorage.setItem(CLAVE_PROGRESO, JSON.stringify(juego.serializar()));
@@ -1194,6 +1378,8 @@ async function iniciarAplicacion() {
   try {
     sesionOnline = await obtenerSesion();
     if (!sesionOnline?.user?.id) {
+      esAdministrador = false;
+      adminMenuButton.hidden = true;
       if (localStorage.getItem(CLAVE_DUENO_NUBE) && perfil) {
         renderEstado();
         mostrarCentro();
@@ -1205,6 +1391,8 @@ async function iniciarAplicacion() {
       return;
     }
 
+    await actualizarAccesoAdministrador();
+
     const idUsuario = sesionOnline.user.id;
     const propietarioLocal = localStorage.getItem(CLAVE_DUENO_NUBE);
     if (propietarioLocal && propietarioLocal !== idUsuario) limpiarDatosLocalesDeOtraCuenta();
@@ -1212,13 +1400,24 @@ async function iniciarAplicacion() {
     const cuenta = await cargarCuentaOnline(idUsuario);
     const conservarCambiosLocales = localStorage.getItem(CLAVE_DUENO_NUBE) === idUsuario
       && localStorage.getItem(CLAVE_NUBE_SUCIO) === '1';
-    if (cuenta.perfil && cuenta.guardado && !conservarCambiosLocales && aplicarDatosDeCuenta(cuenta)) {
+    const reinicioPendiente = cuenta.guardado?.__adminReset === true;
+    const tokenReinicioServidor = typeof cuenta.guardado?.__adminResetToken === 'string'
+      ? cuenta.guardado.__adminResetToken : null;
+    const tokenReinicioLocal = localStorage.getItem(CLAVE_REINICIO_ADMIN_LOCAL) || null;
+    const reinicioNuevoEnServidor = tokenReinicioServidor !== tokenReinicioLocal;
+    if (cuenta.perfil && cuenta.guardado && (reinicioPendiente || reinicioNuevoEnServidor || !conservarCambiosLocales) && aplicarDatosDeCuenta(cuenta)) {
       localStorage.setItem(CLAVE_DUENO_NUBE, idUsuario);
       googleButton.hidden = true;
       accountEntry.hidden = true;
       renderEstado();
       mostrarCentro();
-      actualizarEstadoCuenta('Tu progreso se sincronizó con tu cuenta de Google.');
+      if (reinicioPendiente || reinicioNuevoEnServidor) {
+        actualizarEstadoCuenta('El administrador restableció tu partida. Tus artículos y perfil se conservaron.');
+        versionNube += 1;
+        void sincronizarNubeAhora();
+      } else {
+        actualizarEstadoCuenta('Tu progreso se sincronizó con tu cuenta de Google.');
+      }
       return;
     }
     if (cuenta.perfil && cuenta.guardado && conservarCambiosLocales) {
@@ -1264,6 +1463,7 @@ function serializarDatosPrivados() {
     profile: perfil ? { ...perfil } : null,
     cosmetics: datosCosmeticos(),
     achievements: [...logrosDesbloqueados],
+    __adminResetToken: tokenReinicioAdmin,
   };
 }
 
@@ -1291,6 +1491,10 @@ async function sincronizarNubeAhora() {
     }
   } catch (error) {
     console.warn('La partida sigue guardada localmente; la sincronización se volverá a intentar.', error);
+    if (error.code === '55000' || /restableció tu progreso/i.test(error.message || '')) {
+      actualizarEstadoCuenta('Tu progreso fue restablecido desde administración. Recarga esta página para sincronizar el cambio.');
+      return;
+    }
     actualizarEstadoCuenta('Sin conexión con la nube. Tu partida sigue guardada aquí y se sincronizará al volver a conectarte.');
     if (navigator.onLine) window.setTimeout(() => { if (versionGuardadaNube < versionNube) void sincronizarNubeAhora(); }, 8000);
   } finally {
@@ -1556,7 +1760,21 @@ document.querySelector('#sign-out-button').addEventListener('click', async () =>
   await sincronizarNubeAhora();
   await cerrarSesionOnline();
   sesionOnline = null;
+  esAdministrador = false;
+  tokenReinicioAdmin = null;
+  adminMenuButton.hidden = true;
   mostrarAccesoOnline();
+});
+document.querySelector('.achievement-filters').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-difficulty]');
+  if (!button) return;
+  filtroDificultadLogros = button.dataset.difficulty;
+  document.querySelectorAll('.achievement-filter').forEach((filter) => {
+    const selected = filter === button;
+    filter.classList.toggle('selected', selected);
+    filter.setAttribute('aria-pressed', String(selected));
+  });
+  renderCentro();
 });
 document.querySelector('#player-search-form').addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -1564,6 +1782,16 @@ document.querySelector('#player-search-form').addEventListener('submit', async (
   if (apodo.length < 3) return;
   document.querySelector('#social-feedback').textContent = 'Buscando jugadores…';
   await ejecutarBusquedaJugadores(apodo);
+});
+document.querySelector('#admin-player-search-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const apodo = document.querySelector('#admin-player-search-input').value.trim();
+  if (apodo.length < 3) return;
+  await buscarCuentasParaAdministrar(apodo);
+});
+adminPlayerResultsElement.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-admin-reset-id]');
+  if (button) void ejecutarReinicioAdministrativo(button);
 });
 document.querySelector('#refresh-social-button').addEventListener('click', () => { void cargarPanelSocial(); });
 document.querySelector('#ranking-weekly-button').addEventListener('click', () => elegirPeriodoClasificacion('weekly'));
@@ -1676,16 +1904,6 @@ document.querySelector('#next-level-button').addEventListener('click', () => {
 document.querySelector('#dialog-menu-button').addEventListener('click', () => {
   dialogElement.close();
   mostrarCentro();
-});
-
-document.querySelector('#restart-button').addEventListener('click', () => {
-  if (!window.confirm('¿Reiniciar el progreso de la partida? Se borrarán el nivel, las monedas, las estrellas, los puntos y el tablero. Se conservarán tu récord personal, marcos y estilos comprados.')) return;
-  juego.reiniciarPartida();
-  seleccionada = null;
-  pistaIndices = [];
-  dialogElement.close();
-  messageElement.textContent = 'Tu cocina está lista para empezar de nuevo.';
-  renderEstado();
 });
 
 window.addEventListener('pagehide', guardarProgreso);
