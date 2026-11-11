@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#fffaf4" />
+    <meta name="description" content="Guía oficial de Merge Cocina: aprende las cadenas de ingredientes, cómo administrar movimientos y cómo completar pedidos." />
+    <link rel="canonical" href="https://merge-cocina.vercel.app/guia.html" />
+    <title>Cómo jugar Merge Cocina | Guía oficial</title>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/legal.css" />
+    <link rel="stylesheet" href="/contenido.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <main id="contenido" class="legal-shell">
+      <nav class="content-nav" aria-label="Navegación principal">
+        <a class="legal-brand" href="/"><span aria-hidden="true">🍳</span>Merge Cocina</a>
+        <div class="content-links">
+          <a href="/">Jugar</a>
+          <a href="/niveles.html">Recetas y niveles</a>
+          <a href="/privacidad.html">Privacidad</a>
+          <a href="/terminos.html">Términos</a>
+        </div>
+      </nav>
+      <article class="legal-card content-card">
+        <p class="eyebrow">GUÍA DEL JUEGO</p>
+        <h1>Cómo jugar Merge Cocina</h1>
+        <p class="updated">Guía oficial · Actualizada el <time datetime="2026-11-11">11 de noviembre de 2026</time></p>
+        <p class="intro">Merge Cocina es un rompecabezas de cocina para navegador. En cada nivel recibes una lista concreta de pedidos y un tablero de 5 columnas por 6 filas. El reto es transformar ingredientes iguales en productos más elaborados, reservar espacio en el tablero y entregar todos los pedidos antes de quedarte sin movimientos.</p>
+
+        <nav class="page-toc" aria-label="En esta guía">
+          <strong>En esta guía</strong>
+          <a href="#combinar">Combinar productos</a>
+          <a href="#cadenas">Cadenas de ingredientes</a>
+          <a href="#movimientos">Movimientos y derrotas</a>
+          <a href="#estrategia">Estrategias útiles</a>
+          <a href="#monedas">Puntos, monedas y tienda</a>
+          <a href="#preguntas">Preguntas frecuentes</a>
+        </nav>
+
+        <section id="combinar">
+          <h2>1. Combina productos de la misma cadena</h2>
+          <p>Selecciona una pieza del tablero y después otra del mismo tipo y nivel. Las dos se convierten en una pieza del siguiente nivel. Por ejemplo, dos semillas se vuelven harina. Para avanzar una receta, repite la fusión hasta obtener el producto que aparece en el pedido.</p>
+          <p>La familia y el nivel deben coincidir. Una harina y una masa no se combinan entre sí; tampoco se mezclan ingredientes de las dos cadenas. Si intentas combinar dos piezas incompatibles, el movimiento se consume y las piezas siguen en el tablero.</p>
+        </section>
+
+        <section id="cadenas">
+          <h2>2. Cadenas de ingredientes</h2>
+          <p>Cada familia tiene cinco etapas. Usa estas secuencias para saber qué piezas necesitas crear y cuándo conviene entregar un pedido.</p>
+          <div class="recipe-chains">
+            <section class="recipe-chain" aria-labelledby="bread-chain-title">
+              <h3 id="bread-chain-title">Cadena de pan</h3>
+              <ol class="chain-steps">
+                <li><span aria-hidden="true">🌱</span><strong>Semilla</strong><small>Nivel 1</small></li>
+                <li><span aria-hidden="true">🌾</span><strong>Harina</strong><small>Nivel 2</small></li>
+                <li><span aria-hidden="true">🥣</span><strong>Masa</strong><small>Nivel 3</small></li>
+                <li><span aria-hidden="true">🍞</span><strong>Pan</strong><small>Nivel 4</small></li>
+                <li><span aria-hidden="true">🥪</span><strong>Sándwich</strong><small>Nivel 5</small></li>
+              </ol>
+            </section>
+            <section class="recipe-chain" aria-labelledby="fruit-chain-title">
+              <h3 id="fruit-chain-title">Cadena de fruta</h3>
+              <ol class="chain-steps">
+                <li><span aria-hidden="true">🌼</span><strong>Flor</strong><small>Nivel 1</small></li>
+                <li><span aria-hidden="true">🍓</span><strong>Fruta</strong><small>Nivel 2</small></li>
+                <li><span aria-hidden="true">🧃</span><strong>Jugo</strong><small>Nivel 3</small></li>
+                <li><span aria-hidden="true">🍮</span><strong>Postre</strong><small>Nivel 4</small></li>
+                <li><span aria-hidden="true">🎂</span><strong>Pastel</strong><small>Nivel 5</small></li>
+              </ol>
+            </section>
+          </div>
+          <p>El nivel 5 es el último de cada cadena. Cuando una pieza ya coincide con un pedido, entrégala desde la lista de recetas para liberar una casilla y registrar el avance.</p>
+        </section>
+
+        <section id="movimientos">
+          <h2>3. Cómo funcionan los movimientos</h2>
+          <div class="rule-grid">
+            <article class="rule-card"><strong>Fusión correcta</strong><p>Cuesta 1 movimiento y produce una pieza de nivel superior.</p></article>
+            <article class="rule-card"><strong>Intento incompatible</strong><p>Cuesta 1 movimiento. Comprueba la familia y el nivel antes de elegir la segunda pieza.</p></article>
+            <article class="rule-card"><strong>Generar ingrediente</strong><p>Cuesta medio movimiento. El juego sugiere la familia que ayuda a cubrir los pedidos pendientes.</p></article>
+            <article class="rule-card"><strong>Entregar o pedir una pista</strong><p>Entregar un pedido completado y usar una pista no gastan movimientos.</p></article>
+          </div>
+          <p>El tablero calcula cuántas fusiones y cuántos ingredientes faltan para las recetas que siguen pendientes y agrega cinco movimientos de margen. El número puede cambiar después de entregar una receta, porque las piezas de ese pedido dejan de ser necesarias.</p>
+          <p>Si se termina un intento, el tablero vuelve a prepararse para el nivel. Después de la segunda derrota, los pedidos de ese nivel vuelven a estar pendientes. El nivel, las monedas y las estrellas que ya ganaste se conservan.</p>
+        </section>
+
+        <section id="estrategia">
+          <h2>4. Estrategias para aprovechar el tablero</h2>
+          <ol class="strategy-list">
+            <li><strong>Lee todos los pedidos primero.</strong> Identifica la familia, el nivel final y la cantidad que pide cada receta. La página de <a href="/niveles.html">recetas y niveles</a> muestra la lista completa de la campaña.</li>
+            <li><strong>Construye desde la base.</strong> Cada pieza de nivel 2 necesita dos de nivel 1; cada pieza de nivel 3 necesita cuatro piezas de nivel 1, salvo que el tablero ya tenga etapas intermedias.</li>
+            <li><strong>Entrega en cuanto completes una receta.</strong> Las entregas son gratis y las piezas entregadas salen del tablero, lo que devuelve espacio para seguir combinando.</li>
+            <li><strong>Evita generar por costumbre.</strong> Generar es útil cuando la cadena necesita una pieza base, pero gasta medio movimiento y una casilla del tablero.</li>
+            <li><strong>Combina para ordenar el espacio.</strong> Las fusiones liberan una casilla. Si el tablero se llena, busca primero dos piezas iguales que no necesites entregar de inmediato.</li>
+            <li><strong>Usa la pista gratis cuando te atasques.</strong> La pista resalta una fusión disponible o recomienda generar un ingrediente que ayude con los pedidos actuales.</li>
+          </ol>
+        </section>
+
+        <section id="monedas">
+          <h2>5. Puntos, monedas y tienda</h2>
+          <p>Una fusión suma 10 puntos por cada nivel de la pieza creada; por ejemplo, una fusión que produce un producto de nivel 4 suma 40 puntos. Entregar un pedido suma 25 puntos por nivel y por pieza: entregar dos Jugos (nivel 3) suma 150. Al completar un nivel se añaden 50 puntos por cada estrella obtenida. El récord personal se guarda junto con la partida.</p>
+          <p>La recompensa de monedas aumenta con el nivel: se calcula como 500 monedas por nivel, más 150 monedas adicionales por cada bloque de cinco niveles ya superado. Completar el nivel 1 entrega 500 monedas; completar el nivel 16 entrega 8.450. Las estrellas se suman al completar todos los pedidos del nivel.</p>
+          <p>Las monedas del juego sirven para desbloquear estilos, marcos e iconos y para comprar movimientos extra. La tienda también muestra paquetes con precios de referencia en dólares, pero las compras con dinero real todavía no están activadas. No se cobra al pulsar esos paquetes.</p>
+          <p>El reto diario puede otorgar monedas en el modo local. En una cuenta conectada, su recompensa queda pendiente hasta que el servidor pueda validar el progreso.</p>
+        </section>
+
+        <section id="preguntas" class="faq-list">
+          <h2>6. Preguntas frecuentes</h2>
+          <details><summary>¿Tengo que combinar productos de familias distintas?</summary><p>No. Las cadenas de pan y fruta avanzan por separado. Las dos piezas de una fusión deben pertenecer a la misma familia y tener el mismo nivel.</p></details>
+          <details><summary>¿Entregar una receta consume un movimiento?</summary><p>No. La entrega es gratuita, siempre que el tablero contenga la cantidad exacta de piezas que pide la receta.</p></details>
+          <details><summary>¿El juego se puede instalar en un teléfono?</summary><p>Sí. Merge Cocina es una PWA: desde el menú de compartir de Safari puedes añadirla a la pantalla de inicio del iPhone; en Android puedes instalarla desde el aviso o el menú del navegador. El progreso local depende del almacenamiento de ese navegador; la sincronización entre dispositivos requiere que la cuenta en línea esté configurada.</p></details>
+          <details><summary>¿Puedo comprar monedas ahora?</summary><p>No. Los paquetes muestran cantidades y precios de referencia, pero el pago real está deshabilitado hasta que se conecte un proveedor de pagos seguro.</p></details>
+        </section>
+
+        <aside class="guide-callout">
+          <strong>¿Listo para preparar los pedidos?</strong>
+          <p>Abre el juego para probar estas reglas o consulta antes la lista de productos que pide cada uno de los 16 niveles.</p>
+          <div class="callout-links"><a href="/" class="content-button">Ir al juego</a><a href="/niveles.html">Ver recetas y niveles</a></div>
+        </aside>
+      </article>
+      <footer class="legal-footer content-footer">
+        <a href="/">Volver al juego</a>
+        <a href="/niveles.html">Recetas y niveles</a>
+        <a href="/privacidad.html">Privacidad</a>
+        <a href="/terminos.html">Términos y condiciones</a>
+      </footer>
+    </main>
+  </body>
+</html>

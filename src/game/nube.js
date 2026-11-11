@@ -189,6 +189,26 @@ export async function cargarCuentaOnline() {
   return { perfil, guardado: guardados?.[0]?.save_data ?? null };
 }
 
+export async function verificarAdministradorOnline() {
+  const respuesta = await pedirDatos('rpc/is_merge_cocina_admin', { method: 'POST', body: {} });
+  return respuesta === true;
+}
+
+export async function buscarJugadoresAdmin(apodo) {
+  const filas = await pedirDatos('rpc/admin_search_players', {
+    method: 'POST',
+    body: { p_query: apodo },
+  });
+  return Array.isArray(filas) ? filas : [];
+}
+
+export async function reiniciarProgresoAdminOnline(idJugador) {
+  return pedirDatos('rpc/admin_reset_player_progress', {
+    method: 'POST',
+    body: { p_player_id: idJugador },
+  });
+}
+
 export async function crearPerfilOnline(apodo) {
   const filas = await pedirDatos('rpc/create_player_profile', {
     method: 'POST',

@@ -17,7 +17,7 @@ Un juego casual de cocina para combinar ingredientes, completar pedidos y pasar 
 - Completar los primeros 8 niveles desbloquea «Gran banquete»; terminar los 16 desbloquea «Cocina legendaria», uno de los logros principales del perfil público cuando el servidor valide la partida.
 - Los efectos de fusión, ingredientes, entregas y victoria se pueden activar o silenciar desde el menú; la preferencia se conserva en el dispositivo.
 - El menú incluye un resumen de las reglas y el tablero puede recorrerse con las flechas del teclado; Enter o Espacio activa la casilla.
-- La tienda ofrece 13 estilos de tablero, 11 marcos y 12 iconos de perfil. Los artículos desbloqueados y equipados se guardan aparte y sobreviven al reinicio de la partida.
+- La tienda ofrece estilos de tablero, marcos e iconos de perfil. Los artículos desbloqueados y equipados se guardan aparte y sobreviven al reinicio de la partida.
 - Completar el nivel 1 entrega 500 monedas; la recompensa aumenta 500 por nivel y suma 150 monedas adicionales después de cada bloque de cinco niveles. Completar una receta no gasta movimientos y conserva la recompensa hasta terminar todos los pedidos.
 - Cinco movimientos extra cuestan 300 monedas. Los marcos y estilos comprables cuestan más de 500.000 monedas; al terminar el nivel 16 se puede comenzar otra vuelta y conservar el saldo.
 - Los saldos de las versiones anteriores se ajustan automáticamente a esta escala de monedas.
@@ -27,7 +27,8 @@ Un juego casual de cocina para combinar ingredientes, completar pedidos y pasar 
 - Desde Mi perfil se puede descargar/restaurar una copia JSON del progreso del juego. La copia no incluye el perfil, imágenes, credenciales ni sesión; restaurarla reemplaza la partida actual.
 - El PWA muestra un aviso cuando pierde conexión. El guardado local sigue disponible; al volver la red, intenta reanudar la sincronización privada configurada.
 - Al quedarse sin movimientos se registra una derrota. La segunda derrota reinicia los pedidos del nivel actual; el nivel, las monedas y las estrellas se conservan.
-- La tienda muestra nueve paquetes de monedas entre US$0,50 y US$200 con sus cantidades. Los botones siguen desactivados: falta integrar un proveedor de pagos y un backend que verifique cobros antes de acreditar monedas.
+- La tienda muestra nueve paquetes de monedas de referencia entre US$0,50 y US$160 con sus cantidades. Los botones siguen desactivados: falta integrar un proveedor de pagos y un backend que verifique cobros antes de acreditar monedas.
+- Las páginas públicas [Cómo jugar](public/guia.html) y [Recetas y niveles](public/niveles.html) explican las reglas, las cadenas de productos, las recompensas y los objetivos de toda la campaña.
 
 ## Cuenta, progreso sincronizado y amigos
 
@@ -53,9 +54,9 @@ pnpm preview
 
 El servidor de desarrollo muestra direcciones local y de red en la terminal. Para
 abrir la versión de desarrollo desde un teléfono, conecta ambos dispositivos a
-la misma red Wi-Fi y visita la dirección «Network» que muestra Vite (por ejemplo,
-`http://192.168.x.x:5175`). Esta dirección funciona mientras el servidor siga
-activo y la red permita conexiones entre dispositivos.
+la misma red Wi-Fi y visita la dirección LAN que muestra Vite. Esta dirección
+funciona mientras el servidor siga activo y la red permita conexiones entre
+dispositivos.
 
 Para instalar la PWA y abrirla desde su icono en Android o iPhone, publica el contenido
 de `dist/` en un hosting con HTTPS. En Safari de iPhone, usa Compartir → Añadir a
@@ -67,8 +68,11 @@ El manifest y el service worker se generan al ejecutar `pnpm build`.
 
 Abre la página al menos una vez con conexión para guardar sus recursos sin conexión.
 
-Cada navegador mantiene su propio progreso. El botón «Reiniciar progreso» lo
-borra tras pedir confirmación.
+El progreso local se mantiene en el almacenamiento del navegador. Si la
+sincronización de Supabase está configurada, una cuenta puede recuperar su
+partida en otro dispositivo. El reinicio de progreso de una cuenta en línea se
+gestiona desde la función administrativa; no hay un botón de reinicio manual
+para el jugador.
 
 
 Consulta [GUIA_PUBLICACION.md](GUIA_PUBLICACION.md) para configurar Vercel y conocer qué servicios requieren habilitación en Supabase antes de abrir competencias o pagos.
